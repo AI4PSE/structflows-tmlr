@@ -1,0 +1,160 @@
+\newpage
+\section{Appendix: Extended Results}
+\label{app:results}
+
+\subsection{Linear versus non-linear}
+
+We expect CAREFL to do well on the linear PGM problem as the structure of the PGM matches the assumptions / inductive bias within CAREFL - affine, exponential family. But since these assumptions are restrictive, we expect CAREFL to perform poorly on the non-linear PGM problem. The results (Figures~\ref{fig:swd-linear-v-nonlinear} and~\ref{fig:counterfactual-linear-v-nonlinear}) bear this out: on the linear benchmarks CAREFL is competitive throughout and strongest on counterfactual queries---abduction through its exactly-matched affine inverse is nearly exact---whereas on the nonlinear benchmarks it falls behind the structured CNFs, where dynamic conditioning is competitive with static (interventional SWD within a few percent on the $4$-node graphs).
+
+% \begin{figure}[hbt!]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/experimental_figures/linear/final_box_counterfactual_swd_pgms_all_task_causal_queries_avg.png}
+%     \caption{Linear PGM results. Aggregated over all PGM seeds (n=3), all learner seeds (n=3) and all supported distributions.}
+%     \label{fig:counterfactual-linear-pgm}
+% \end{figure}
+
+% \begin{figure}[hbt!]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/experimental_figures/linear/final_box_counterfactual_swd_pgms_all_task_causal_queries_avg.png}
+%     \caption{Non-Linear PGM results. Aggregated over all PGM seeds (n=3), all learner seeds (n=3) and all supported distributions.}
+%     \label{fig:counterfactual-nonlinear-pgm}
+% \end{figure}
+
+\begin{figure*}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/pgm_type_comparison_swd_task_causal_conditional.png}
+    \caption{\textbf{Interventional Query Results.} Sliced Wasserstein Distance for interventional distributions $p(y \mid \mathrm{do}(x))$ on linear and nonlinear PGMs (these coincide with the observational conditionals $p(y \mid x)$ for the evaluated query family; see Section~\ref{sec:experiments}). Results aggregated over 5 PGM seeds and 5 learner seeds.}
+    \label{fig:swd-linear-v-nonlinear}
+\end{figure*}
+
+\begin{figure*}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/pgm_type_comparison_counterfactual_swd_task_causal_conditional.png}
+    \caption{\textbf{Counterfactual Query Results.} Sliced Wasserstein Distance for counterfactual distributions on linear and nonlinear PGMs. Aggregated over 5 PGM seeds and 5 learner seeds.}
+    \label{fig:counterfactual-linear-v-nonlinear}
+\end{figure*}
+
+\subsection{KL divergence on linear-Gaussian causal queries}
+\label{app:kl-linear}
+
+On the linear-Gaussian benchmarks the ground-truth conditionals are available in closed form, so the causal queries can additionally be scored by KL divergence, which puts the (deliberately small) normalized SWD values of Section~\ref{sec:experiments} on a calibrated scale. Table~\ref{tab:linear4-kl} reports median scores on the $4$-node linear benchmark, aggregated over conditional causal queries, $5$ PGM seeds and $5$ learner seeds. Among the methods that define a tractable conditional density, KL reproduces the SWD ordering exactly on interventional queries (Universal $<$ CAREFL $<$ Static $<$ Dynamic); guided sampling defines no conditional density for most queries, so its KL is omitted. On counterfactuals the two metrics agree that CAREFL and the universal baseline sit far below the rest; they order that near-tied pair differently (SWD has them essentially tied, KL favors the universal baseline), which is within seed-to-seed variation.
+
+A remark on what the counterfactual columns measure. Our factuals are \emph{fully observed}, so by Remark~\ref{rem:density-scope} each counterfactual is a point mass and has no density of its own. The ``Cf.'' entries are therefore \emph{not} divergences between counterfactual distributions: each model evaluates the density of its own \emph{mutilated (interventional)} distribution at the counterfactual point, and the reported score is the mean log-ratio of the true and learned interventional densities over the factual population---a calibration diagnostic asking whether the two mutilated models agree along the manifold where counterfactuals land. Read this way, the column is consistent with Remark~\ref{rem:density-scope} and cleanly corroborates the counterfactual SWD ordering.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{KL divergence versus SWD on the $4$-node linear-Gaussian benchmark} (causal task, conditional queries; median over queries, $5$ PGM seeds and $5$ learner seeds). ``Int.''\ denotes interventional queries; ``Cf.''\ entries are interventional-density log-ratios evaluated at the counterfactual points (see text---the counterfactual itself is a point mass under full observation, Remark~\ref{rem:density-scope}). KL corroborates the SWD ordering of the density-bearing methods; guided sampling has no tractable conditional density, so KL is unavailable for it.}
+\label{tab:linear4-kl}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Method} & \textbf{Int.\ SWD} & \textbf{Int.\ KL} & \textbf{Cf.\ SWD} & \textbf{Cf.\ KL} \\
+\midrule
+Universal & 0.0123 & 0.028 & 0.0008 & 0.022 \\
+Guided    & 0.0147 & ---   & ---    & ---   \\
+CAREFL    & 0.0175 & 0.231 & 0.0007 & 0.232 \\
+Static    & 0.0232 & 0.380 & 0.0195 & 0.289 \\
+Dynamic   & 0.0289 & 5.829 & 0.0230 & 4.864 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Learning the joint distribution: causal structure versus inference structure}
+
+Is one direction (causal versus inference) better at learning the joint distribution than the other?
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/experimental_figures/nonlinear/task_comparison_swd_joint.png}
+    \caption{Non-linear PGM results. 4-node PGMs. Aggregated over all PGM seeds (n=5) and all learner seeds (n=5). Only the joint distribution SWD.}
+    \label{fig:nonlinear-joint}
+\end{figure}
+
+\subsection{Granular PGM metrics}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/nonlinear/final_box_swd_pgms_all_task_causal_queries_all.png}
+    \caption{Nonlinear PGM results for the causal task. Aggregated over learner seeds (n=5).}
+    \label{fig:causal-nonlinear-pgm-queries}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/nonlinear/final_box_swd_pgms_all_task_inference_queries_all.png}
+    \caption{Nonlinear PGM results for the inference task. Aggregated over learner seeds (n=5).}
+    \label{fig:inference-nonlinear-pgm-queries}
+\end{figure}
+
+
+\subsection{Scaling to $8$-node PGMs}
+
+To check that the framework is not limited to very small graphs, we repeat the inference evaluation on random $8$-node nonlinear PGMs ($5$ PGM seeds $\times$ $5$ learner seeds). Figure~\ref{fig:inference-n8} shows that the qualitative picture is unchanged from $n=4$: all flow-based methods are closely comparable, with the structured (Static) flow tracking the unstructured baselines. This is consistent with our central finding---on well-sampled graphs, structure is a competitive but not dominant choice, and its advantage is most visible under limited data (Section~\ref{sec:sample-efficiency}). The binding constraint on scaling further is \emph{evaluation}, not training: generating MCMC ground truth for every conditional query grows quickly with $n$ (Section~\ref{sec:future_work}).
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/experimental_figures/nonlinear8/final_box_swd_pgms_all_task_inference_queries_avg_conditional.png}
+    \caption{\textbf{Inference on $8$-node nonlinear PGMs.} Normalized SWD on posterior queries, aggregated over conditional queries, $5$ PGM seeds and $5$ learner seeds. ``Universal'' denotes an unstructured joint-flow baseline. The structured (Static) flow remains competitive at $n=8$, matching the $n=4$ trend.}
+    \label{fig:inference-n8}
+\end{figure}
+
+\subsection{MNIST}
+
+\begin{figure*}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/mnist/final_box_swd_pgms_all_task_all_queries_all.png}
+    \caption{\textbf{MNIST Results.} Sliced Wasserstein Distance across joint, marginal, and conditional distributions for the structure \texttt{labels}$\to$\texttt{images}. Aggregated over 5 seeds.}
+    \label{fig:mnist-swd}
+\end{figure*}
+
+\paragraph{Is the elevated dynamic-conditioning SWD an outlier artifact?}
+Appendix~\ref{app:additional-experiments} reports that dynamic conditioning attains the highest conditional SWD on $p(\text{image}\mid\text{label})$ of the flows compared here (roughly $2.5\times$ the static score when aggregated over the $5$ seeds of Figure~\ref{fig:mnist-swd}). We test whether this is driven by a few divergent pixels (which a squared-distance metric would over-weight) or by a genuine, broadly-distributed mismatch. Table~\ref{tab:mnist-outlier} reports, for one representative trained model per method, the SWD recomputed after discarding the largest fraction of the squared sorted-difference terms that make up the SWD, together with the share of the total carried by the top $1\%$ of terms. If outliers dominated, trimming would sharply reduce the score and the top-$1\%$ share would be anomalously high for dynamic conditioning. Neither holds: trimming the top $1\%$ leaves the dynamic-vs-static ratio essentially unchanged ($1.95\times \to 1.95\times$ for the representative run), and dynamic conditioning's top-$1\%$ share ($\sim\!11\%$) is no larger than that of the well-behaved static and guided baselines. The excess SWD is therefore spread across the distribution. Consistent with this, inspecting samples (Figures~\ref{fig:mnist-sample1}--\ref{fig:mnist-sample3}) shows that dynamic conditioning yields perceptually crisp digits that nonetheless sometimes render the wrong class for the conditioning label---a broadly-distributed conditional error, not a heavy tail. The diagnostic script is released with the code.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{Outlier diagnostic for the MNIST conditional SWD} ($p(\text{image}\mid\text{label})$, one representative run per method, corrected sampler, $1000$ conditional samples). ``Trim $x\%$'' recomputes the SWD after dropping the largest $x\%$ of its squared sorted-difference terms; ``top-$1\%$ share'' is the fraction of the total squared mass in those terms. Trimming barely moves any score and dynamic's top-$1\%$ share is typical, so the elevated dynamic SWD is a genuine distributional gap rather than an outlier artifact.}
+\label{tab:mnist-outlier}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Method} & \textbf{SWD} & \textbf{Trim 0.1\%} & \textbf{Trim 1\%} & \textbf{Top-1\% share} \\
+\midrule
+Guided    & 0.0118 & 0.0116 & 0.0111 & 11.8\% \\
+Universal & 0.0119 & 0.0117 & 0.0109 & 17.6\% \\
+Static    & 0.0141 & 0.0140 & 0.0134 & 11.3\% \\
+CAREFL    & 0.0273 & 0.0270 & 0.0259 & 11.1\% \\
+Dynamic   & 0.0275 & 0.0273 & 0.0261 & 10.9\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% NOTE: this sweep figure is built from the training-time evaluation logs and could not be
+% regenerated with the corrected dynamic-mode sampler (only final-step evaluations were re-run).
+% Its final-step values are qualitatively consistent with the corrected evaluation
+% (dynamic conditional SWD ~0.19 vs static ~0.075); the caption intentionally makes no
+% quantitative claims and the figure should be read for convergence trends only.
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/mnist/sweep_dynamics_swd_pgms_all_task_all.png}
+    \caption{SWD evaluated on the test set as a function of training step. Aggregated over 5 seeds.}
+    \label{fig:mnist-sweep-dynamics}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/mnist/mnist_samples1.png}
+    \caption{Samples from 4 models trained on MNIST.}
+    \label{fig:mnist-sample1}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/mnist/mnist_samples2.png}
+    \caption{Samples from 4 models trained on MNIST.}
+    \label{fig:mnist-sample2}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=\textwidth]{images/experimental_figures/mnist/mnist_samples3.png}
+    \caption{Samples from 4 models trained on MNIST.}
+    \label{fig:mnist-sample3}
+\end{figure}

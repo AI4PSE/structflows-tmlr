@@ -1,0 +1,20 @@
+\section{Future Work and Limitations}
+\label{sec:future_work}
+
+\paragraph{\cam{Scope and real-world applicability.}}
+\cam{Our experiments establish the compiler's behaviour where answers can be checked: synthetic graphs with exact or MCMC ground truth (up to $n{=}8$ nodes, $64$ dimensions), plus MNIST and Colored-MNIST, where the image block is high-dimensional but the graph has two or three nodes. None of these is a real-world system, and we make no claim about performance on one. Real applications add three difficulties that our benchmarks deliberately exclude: the graph must be estimated rather than given (next paragraph), causal sufficiency may fail through hidden confounding, and graphs with many high-dimensional nodes stress both training and, more severely, evaluation (``Scaling to Large PGMs'' below). Applying StructFlow to, e.g., simulators in the sciences with known mechanistic structure, where ground truth is partially available, is the natural next test.}
+
+\paragraph{Known structure.}
+Structure discovery is out of scope: the compiler consumes a given DAG, and Appendix~\ref{app:hierarchy} delimits what is provably recovered under it---every interventional distribution for arbitrary mechanisms (Theorem~\ref{thm:level2}), exact counterfactuals for invertible-in-noise or additive mechanisms (Theorem~\ref{thm:level3})---and what is not: the graph itself is unrecoverable from observational data in the linear--Gaussian case (Proposition~\ref{prop:mec}), while for linear non-Gaussian (LiNGAM) models all three levels of Pearl's hierarchy follow end-to-end (Corollary~\ref{cor:lingam}). Coupling StructFlow to a structure learner---and studying degradation under a mis-specified graph---is the highest-value extension.
+
+\paragraph{Counterfactual densities under partial observation.}
+Corollary~\ref{cor:interventional-density} gives the interventional \emph{density} in a single pass. The counterfactual analogue only exists under \emph{partial} observation (fully-observed abduction leaves a point mass), and evaluating it requires the inference-aligned artifact alongside the causal one (Remark~\ref{rem:density-scope}); making the two artifacts cooperate on this query is a natural next step.
+
+\paragraph{Scaling to Large PGMs.}
+We evaluate exhaustively on small PGMs; the binding constraint is the cost of \emph{ground truth}, not training. The two compilations of a dense $n$-node graph jointly support ${\sim}n^2$ tractable queries (already $72$ at $n{=}8$), and every inference-direction query needs its own long NUTS reference chain at every evaluated conditioning value---this evaluation cost, not model capacity, stops our benchmarks at $n = 8$; how performance scales with graph size remains open.
+
+\paragraph{Backbone Comparison Scope.}
+The backbone ablation (Appendix~\ref{app:additional-experiments}) swaps the per-block primitive under matched budgets, isolating the compiled structure's contribution; it is \emph{not} a benchmark against modern diffusion practice---samplers, schedules, distillation, and guidance would all narrow the low-NFE gap we measure, and CNFs have accelerations we equally omit; conclusions about backbones concern the un-augmented primitives only.
+
+\paragraph{Repairing Dynamic Conditioning at Depth.}
+Section~\ref{sec:chain-stiffness} localizes dynamic conditioning's failure to its off-manifold clamped trajectory, suggesting concrete repairs: noise-matched stochastic clamping, training-time exposure to clamped trajectories, or hybrid schedules that switch from dynamic to static conditioning as $t \to 1$.

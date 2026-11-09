@@ -1,0 +1,551 @@
+\newpage
+\section{Appendix: Theoretical Proofs}
+\label{app:proof}
+
+\subsection{Proof of Theorem 1 (Asymmetry of Marginalization)}
+
+\rev{\textbf{Theorem 1.} \textit{In a Block-Triangular Flow ordered $z_1 \to \dots \to z_K$, if $S$ is ancestrally closed (contains all parents, and hence all ancestors, of each of its members), the marginal log-density $\log p(z_S)$ is \emph{directly tractable}---evaluable by the change-of-variables formula restricted to $S$, in a single pass and with no integration over the remaining variables. Conversely, if $S$ is not ancestrally closed, the restricted formula is not valid in general: for any flow in which some missing ancestor's influence is functionally non-degenerate, exact evaluation requires integrating that ancestor out. A topological prefix is the canonical ancestrally-closed set.}}
+
+\begin{proof}
+Let the variables $z$ be partitioned into $K$ blocks, ordered topologically. The flow transformation $\Phi: z(0) \to z(1)$ is defined by the ODE $\frac{dz}{dt} = v_t(z)$.
+
+\paragraph{1. Forward Direction (Ancestrally Closed is Tractable)}
+Let $S$ be ancestrally closed. Due to the block-triangular structure, the velocity of any block $i \in S$ depends only on $i$ and its parents, all of which lie in $S$:
+\begin{equation}
+    v^{(i)}(z, t) = f\bigl(\{z^{(j)} : j \in \{i\} \cup \mathrm{Pa}(i)\}, t\bigr), \qquad \{i\}\cup\mathrm{Pa}(i) \subseteq S.
+\end{equation}
+Consequently, the time-evolution of $z_S$ is entirely self-contained; its trajectories do not depend on the variables outside $S$. We can treat $z_S$ as a standalone flow system, and the marginal log-density is given by the change of variables formula restricted to $S$:
+\begin{equation}
+    \log p(z_S(1)) = \log p(z_S(0)) - \int_0^1 \sum_{i \in S} \text{Tr}\left(\frac{\partial v^{(i)}}{\partial z^{(i)}}\right) dt
+\end{equation}
+Since all terms in the divergence sum are computable using only variables in $S$, the marginal density can be evaluated in a single pass without integration over the remaining variables. A prefix $S=\{1,\dots,k\}$ is a special case.
+
+\paragraph{2. Reverse Direction (Not Ancestrally Closed)}
+Suppose some block $j \in S$ has a parent $i \notin S$, and write $\bar S$ for the complement. The joint factorizes as $p(z_S, z_{\bar S}) = p(z_S \mid z_{\bar S})\,p(z_{\bar S})$, and the marginal requires integrating out $\bar S$:
+\begin{equation}
+    p(z_S) = \int p(z_S | z_{\bar S}) \, p(z_{\bar S}) \, d z_{\bar S}.
+\end{equation}
+In a non-linear flow the conditional $p(z_S | z_{\bar S})$ is a nonlinear function of $z_{\bar S}$ with no closed-form integral; a Monte Carlo estimate would re-sample $z_{\bar S}$, re-incurring the cost of the full joint model. Hence the marginal is not directly tractable and is intractable in general. \rev{Two scope remarks. First, the converse requires \emph{functional non-degeneracy}: if the architectural edge $i \to j$ happens to carry no actual dependence (the trained velocity is constant in $z^{(i)}$), the restricted formula can be accidentally valid; the theorem therefore claims invalidity for flows whose dependencies are functionally non-degenerate, which is the generic case and the intended reading of the architecture. Second, we claim intractability of \emph{exact, integration-free} evaluation, not a worst-case complexity lower bound.}
+\end{proof}
+
+\rev{\begin{corollary}[Supported query family]
+\label{cor:query-family}
+Let a compilation have block order $\mathcal{O} = (z_1, \dots, z_K)$ over \emph{all} graph variables, and let $C, T$ be disjoint subsets with $C = \{z_1, \dots, z_m\}$ a prefix of $\mathcal{O}$. Then:
+(i) \textbf{(Sampling)} the compiled flow draws exact samples from its conditional $p(T \mid C{=}c)$ by clamping the prefix and integrating the remaining blocks in order, discarding draws of the nuisance set $N = V \setminus (C \cup T)$; this marginalizes $N$ by sampling, at the cost of only their block solves, and any nuisance block ordered after every target block is never integrated at all.
+(ii) \textbf{(Density)} $p(T \mid C{=}c) = p(C \cup T)/p(C)$ is directly tractable whenever $C \cup T$ is ancestrally closed in the compiled graph (the prefix $p(C)$ always is); otherwise it falls under the converse of Theorem~1.
+Queries whose condition set is \emph{not} a prefix of $\mathcal{O}$ are answered by compiling (and training) for a different ordering.
+\end{corollary}
+
+\begin{proof}
+(i) By Proposition~1 the model factorizes autoregressively along $\mathcal{O}$, so clamping the prefix to $c$ and ancestrally sampling the remaining blocks draws from $p(V \setminus C \mid C{=}c)$; restricting attention to the $T$-coordinates of each draw is exact marginalization of $N$. Blocks ordered after every target need not be integrated because no target block's dynamics depend on them (they are successors in the compiled order). (ii) Both numerator and denominator are directly tractable by Theorem~1, the former by assumption, the latter because a prefix is ancestrally closed.
+\end{proof}}
+
+\subsection{Proof of Proposition 1 (Structural Preservation)}
+
+\rev{\textbf{Proposition 1.} \textit{Assume velocity fields regular enough for unique, continuously differentiable flows (existence--uniqueness and spatial Lipschitzness; Assumptions~1--2 of \citet{jeong_conditional_2025}). (i)~If the denoiser model $\hat{\eta}_1(y, t)$ respects a block-triangular dependency graph, the induced velocity field $v_t(y)$ and flow map respect the same block-triangular dependency graph, and the learned density factorizes autoregressively along the ordering. (ii)~If block $k$ of the denoiser depends only on its graph parents, then under joint integration block $k$ of the flow map depends only on the base noise of $\{k\} \cup \mathrm{Anc}(k)$, and $p(y) = \prod_k p(y^{(k)} \mid y^{(\mathrm{Anc}(k))})$. (iii)~If blocks are integrated sequentially with parents resolved to their final values, $p(y) = \prod_k p(y^{(k)} \mid y^{(\mathrm{Pa}(k))})$, the Markov factorization of $\mathcal{G}$.}}
+
+\begin{proof}
+Let the state $y$ be partitioned into blocks $y^{(1)}, \dots, y^{(K)}$. By definition, a function is block-triangular if the $k$-th block outcome depends only on the prefix $y^{(1:k)} = [y^{(1)}, \dots, y^{(k)}]$.
+
+\begin{enumerate}
+    \item \textbf{Assumption:} Our neural network $\hat{\eta}_1$ is structured such that:
+    \begin{equation}
+        \hat{\eta}_1^{(k)}(y, t) = \text{NN}^{(k)}(y^{(1)}, \dots, y^{(k)}, t)
+    \end{equation}
+    
+    \item \textbf{Affine Property:} For the linear interpolant used in this work ($y_t = (1-t)y_0 + ty_1$), the velocity field $v_t(y)$ is an affine combination of the input $y$ and the denoiser $\hat{\eta}_1$:
+    \begin{equation}
+        v_t(y) = \frac{\hat{\eta}_1(y, t) - y}{1 - t}
+    \end{equation}
+    This can be written more generally as $v_t(y) = c_1(t)y + c_2(t)\hat{\eta}_1(y, t)$. (The explicit $1/(1-t)$ form is singular at $t=1$, but the argument below uses only the affine-in-$\bigl(y,\hat{\eta}_1\bigr)$ structure, i.e.\ the coefficients $c_1, c_2$, which is the well-defined form; the block-triangularity conclusion does not depend on the value at the endpoint.)
+
+    \item \textbf{Preservation:} The $k$-th block of the velocity field is:
+    \begin{equation}
+        v_t^{(k)}(y, t) = c_1(t)y^{(k)} + c_2(t)\hat{\eta}_1^{(k)}(y^{(1:k)}, t)
+    \end{equation}
+    Since $\hat{\eta}_1^{(k)}$ only depends on the prefix $y^{(1:k)}$, and the term $y^{(k)}$ is itself part of that prefix, it follows that $v_t^{(k)}$ depends strictly on $y^{(1:k)}$.
+\end{enumerate}
+
+Thus, the block-triangularity of the denoiser implies the block-triangularity of the velocity field. \rev{The flow map inherits it: for any prefix $y^{(1:k)}$, the subsystem $\dot{y}^{(1:k)} = v_t^{(1:k)}(y^{(1:k)})$ is autonomous in its own coordinates, and by existence--uniqueness its solution map is a well-defined function of the prefix of the initial condition alone. Sampling blocks in order therefore realizes an autoregressive factorization $p(y) = \prod_k p(y^{(k)} \mid y^{(1:k-1)})$, proving (i). Note that (i) alone establishes \emph{generic triangularity} with respect to the chosen ordering; the DAG-specific sparsity is the content of (ii) and (iii).
+
+\paragraph{(ii) Parent-masked velocity, joint integration: ancestral sparsity.}
+Suppose $v_t^{(k)}$ reads only $(y^{(\mathrm{Pa}(k))}, y^{(k)}, t)$. Fix $k$ and let $A = \{k\} \cup \mathrm{Anc}(k)$. Every block in $A$ has its parents in $A$, so the subsystem $\dot{y}^{(A)} = v_t^{(A)}(y^{(A)})$ is autonomous; by uniqueness, $y^{(k)}(1)$ is a function of the initial noise $u^{(A)}$ only. This is the sharpest sparsity the \emph{jointly integrated} flow map admits: although the velocity reads only parent \emph{trajectories}, those trajectories carry the ancestors' noise, so the map---and hence the conditional $p(y^{(k)} \mid y^{(1:k-1)})$---depends on ancestors in general, not parents alone. The factorization refines as follows: $\mathrm{Anc}(k)$ is ancestrally closed, so the restricted flow on $A \setminus \{k\}$ is an invertible triangular map (part (i)); conditioning on the ancestor \emph{values} $y^{(\mathrm{Anc}(k))}$ therefore pins their noise $u^{(\mathrm{Anc}(k))}$ exactly, and $y^{(k)} = \phi^{(k)}(u^{(\mathrm{Anc}(k))}, u^{(k)})$ with $u^{(k)}$ independent of everything else. Any non-ancestor predecessor $y^{(j)}$ is a function of noises independent of $u^{(k)}$ given $u^{(\mathrm{Anc}(k))}$, so $y^{(k)} \perp y^{(j)} \mid y^{(\mathrm{Anc}(k))}$ and $p(y^{(k)} \mid y^{(1:k-1)}) = p(y^{(k)} \mid y^{(\mathrm{Anc}(k))})$.
+
+\paragraph{(iii) Sequential integration with resolved parents: Markov factorization.}
+In the sequential (static) sampler, block $k$ is integrated only after its parents have reached their final values, and its velocity reads the \emph{resolved} parent values: $\dot{y}^{(k)} = v_t^{(k)}(y^{(k)}, y^{(\mathrm{Pa}(k))}(1), t)$. The solution map is then a measurable function of $(y^{(\mathrm{Pa}(k))}(1), u^{(k)})$ alone, with $u^{(k)}$ independent of all other noise, so the sampling kernel of block $k$ given the entire prefix is a function of the parent values only: $p(y^{(k)} \mid y^{(1:k-1)}) = p(y^{(k)} \mid y^{(\mathrm{Pa}(k))})$. Multiplying over $k$ gives exactly the Markov factorization of $\mathcal{G}$. This sequential case is the sampler used by the causal-alignment mode, and is why its interventional semantics (clamping a block and integrating descendants) samples the mutilated graph exactly.}
+\end{proof}
+
+\begin{remark}[Consistency at the optimum vs.\ guarantees by construction]
+\label{rem:dynamic-consistency}
+Parts (ii)--(iii) concern what the architecture enforces for \emph{every} parameter setting. \cam{Consistency at the training optimum requires more. Under joint flow matching with independent (or joint-OT) pairing of noise and data, the population minimiser of the loss over block-triangular fields is the row-wise projection of the marginal velocity, $\hat v^{(k)}_t = \mathbb{E}[\dot y^{(k)} \mid y^{(1:k)}_t]$. This equals the marginal velocity only if $\mathbb{E}[\dot y^{(k)} \mid y_t] = \mathbb{E}[\dot y^{(k)} \mid y^{(1:k)}_t]$ for every block, i.e.\ if the velocity of a block carries no information about later blocks. When the blocks are dependent this generally fails: the flow-matching loss then has a strictly positive floor over the block-triangular class, and dynamic conditioning is biased at the optimum, already with two blocks. For a bivariate Gaussian with correlation $\rho = 0.9$ and condition $y = c$, the optimum gives $p(\theta \mid y{=}c) = \mathcal{N}(0.571c,\, 0.436)$ instead of $\mathcal{N}(0.9c,\, 0.19)$; a trained network with the architecture used here reaches the predicted value. The posterior-accuracy bound of \citet[Thm.~1]{jeong_conditional_2025} is stated in terms of the flow-matching error against the unconstrained marginal velocity; for a block-triangular field this error does not vanish in general, so the bound does not by itself imply consistency of dynamic conditioning. The remedy is in the coupling rather than the architecture: pairing noise and data block by block in topological order (a Knothe--Rosenblatt coupling, Proposition~\ref{prop:kr-coupling}) makes the marginal velocity block-triangular, and dynamic conditioning is then exact at the optimum. All dynamic models in this paper are trained with the minibatch version of this coupling (Appendix~\ref{app:coupling}).
+
+Beyond the optimum, finite training adds a second error. The bound of \citet[Thm.~1]{jeong_conditional_2025} scales as $e^{2L}\varepsilon^2$, where $\varepsilon$ is the flow-matching error averaged over the \emph{training} path measure, which controls nothing off that measure, while the Gr\"onwall factor $e^{2L}$ compounds local error along the solve. Section~\ref{sec:chain-stiffness} studies how this behaves on deep chains.}
+\end{remark}
+
+\cam{\begin{proposition}[Per-block (Knothe--Rosenblatt) coupling]
+\label{prop:kr-coupling}
+Let blocks be ordered topologically and let the coupling of base noise $e$ and data $y_1$ be the Knothe--Rosenblatt map $y_1 = T(e)$, $T^{(k)}(e) = T_k(e^{(k)};\, y_1^{(1:k-1)})$, with each $T_k(\cdot\,; y_1^{(1:k-1)})$ the Brenier (optimal transport) map from $\mathcal{N}(0, I)$ to $p(y^{(k)} \mid y^{(1:k-1)})$. Under the linear interpolant $y_t = (1-t)e + tT(e)$, the marginal velocity $\mathbb{E}[\dot y \mid y_t]$ is block-triangular. Hence the population optimum of flow matching over block-triangular fields equals the marginal velocity, and dynamic conditioning on any prefix is exact at the optimum.
+\end{proposition}
+\begin{proof}[Proof sketch]
+$M_t(e) = (1-t)e + tT(e)$ is block-triangular because $T$ is. Its $k$-th diagonal block is $(1-t)\,\mathrm{Id} + t\nabla_{e^{(k)}}\varphi_k$ with $\varphi_k$ convex, hence strictly monotone and invertible for $t<1$, so $e = M_t^{-1}(y_t)$ can be solved block by block in order: $e^{(k)}$ is a function of $y_t^{(1:k)}$. The velocity $\dot y = T(e) - e$ is therefore a deterministic function of $y_t$ whose $k$-th block depends only on $y_t^{(1:k)}$, so $\mathbb{E}[\dot y \mid y_t] = \dot y$ is block-triangular and coincides with its row-wise projection. Dynamic conditioning on a prefix $y^{(1:m)} = c$ recovers $e^{(1:m)} = (T^{(1:m)})^{-1}(c)$ by backward integration and draws $e^{(m+1:K)} \sim \mathcal{N}(0,I)$ independently, so $y^{(m+1:K)}_1 = T^{(m+1:K)}(e;\, c) \sim p(y^{(m+1:K)} \mid y^{(1:m)}{=}c)$.
+\end{proof}
+In practice the coupling is computed per minibatch (one optimal assignment per block, with the block's parents as the condition of a condition-aware OT cost; Appendix~\ref{app:coupling}), which approximates $T$; block $k$'s velocity then depends on its ancestors, which the masked network reaches up to its depth. We verified the proposition in closed form on Gaussian structures (two blocks, a three-node chain, two 2-D blocks; irreducible loss $0$ under the coupling, versus $0.03$--$0.32$ under independent or joint-OT pairing) and with trained networks, where the per-block coupling reduces the conditional error of dynamic conditioning to that of static conditioning.}
+
+\subsection{Derivation of Conditional Log-Density}
+\label{app:cond-density}
+
+\textbf{Proposition 2.} \textit{For a Block-Triangular Flow in which the conditioning variables $Y$ precede the targets $\Theta$ in the ordering (so that, by the block-triangular structure, the velocity of $Y$ does not depend on $\Theta$), the conditional log-density $\log p(\Theta | Y)$ is computed by accumulating the divergence of the velocity field with respect to $\Theta$ only.}
+
+\begin{proof}
+Consider the joint system $z = [Y, \Theta]$ ordered such that $Y$ precedes $\Theta$. The flow is defined by the system of ODEs:
+\begin{align}
+    \frac{dY}{dt} &= v_Y(Y, t) \\
+    \frac{d\Theta}{dt} &= v_\Theta(\Theta, Y, t)
+\end{align}
+To evaluate $\log p(\Theta(1) | Y(1))$, we condition on the observed trajectories of $Y(t)$ for $t \in [0,1]$.
+The block-triangular structure is exactly the hypothesis doing the work here: because $Y$ precedes $\Theta$, the velocity $v_Y$ takes no $\Theta$ input, so $Y$'s trajectory is independent of $\Theta$. This holds for both conditioning paradigms---in static conditioning $Y$ is integrated to completion first, and in dynamic conditioning $Y$ co-evolves but its dynamics still do not see $\Theta$. We can therefore view the evolution of $\Theta$ not as a coupled part of a joint system, but as a \textbf{non-autonomous} system where $Y(t)$ acts as a time-dependent external forcing term:
+\begin{equation}
+    \frac{d\Theta}{dt} = \tilde{v}_t(\Theta) = v_\Theta(\Theta, Y(t), t)
+\end{equation}
+The Jacobian of this conditional transformation $\Phi_{Y}: \Theta(0) \to \Theta(1)$ is simply the sub-block of the full Jacobian corresponding to the target variables:
+\begin{equation}
+    J_{\Theta} = \frac{\partial \tilde{v}_t}{\partial \Theta} = \frac{\partial v_\Theta}{\partial \Theta}
+\end{equation}
+Applying the instantaneous change of variables formula to this subsystem yields:
+\begin{equation}
+    \log p(\Theta(1) | Y(1)) = \log p_0(\Theta(0)) - \int_0^1 \text{Tr}\left( \frac{\partial v_\Theta}{\partial \Theta}(\Theta(t), Y(t), t) \right) dt
+\end{equation}
+This confirms that the volume change (divergence) of the conditioning variables $Y$ does not need to be computed or integrated, significantly reducing the computational cost for high-dimensional conditioning.
+\end{proof}
+
+\begin{corollary}[Interventional densities are directly tractable]
+\label{cor:interventional-density}
+Let the flow be causally aligned to $\mathcal{G}$ and let $\mathrm{do}(x^{(I)} = a)$ be any hard
+intervention. Then the log-density of the interventional distribution is available in a
+\emph{single} pass, with no divergence contribution from the intervened blocks:
+\begin{equation}
+\label{eq:interventional-density}
+    \log \hat p\bigl(x^{(-I)} \mid \mathrm{do}(x^{(I)}{=}a)\bigr)
+    = \log p_0\bigl(u_{-I}\bigr)
+      - \int_0^1 \sum_{k \notin I}
+        \mathrm{Tr}\!\left(\frac{\partial v^{(k)}}{\partial x^{(k)}}\right) dt .
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+Clamping the blocks in $I$ removes them from the dynamics and replaces them by a fixed
+trajectory, which enters the velocity of the remaining blocks only through their parent
+slots. The remaining system is therefore a non-autonomous block-triangular flow forced by a
+prescribed external signal---exactly the hypothesis of Proposition~2 with the conditioning
+set $Y$ taken to be the intervened set $I$. Applying Proposition~2 gives
+\eqref{eq:interventional-density}.
+\end{proof}
+
+\begin{remark}[What this buys, and what it does not]
+\label{rem:density-scope}
+Corollary~\ref{cor:interventional-density} is why the interventional comparisons of
+Section~\ref{sec:experiments} can be scored by exact KL on the linear--Gaussian PGMs rather
+than by a sample-based proxy: the model gives the interventional \emph{distribution}, not
+merely samples from it. The analogous statement fails for counterfactuals, and it is worth
+being precise about why. In a deterministic SCM with a \emph{fully observed} factual, the
+abduction step pins the exogenous noise down exactly, so $p(Y_{x'} \mid X{=}x, Y{=}y)$ is a
+point mass and there is no density to evaluate. The counterfactual becomes a genuine
+distribution only under \emph{partial} observation, where it is the pushforward under the
+mutilated mechanism of the posterior $p(u \mid x_{\mathrm{obs}})$ over the unresolved noise.
+Evaluating that density therefore requires a posterior over noise---an inference-direction
+object. Counterfactual densities under partial observation are thus precisely the query for
+which the two compiled artifacts of Section~\ref{sec:structflow} must be used together; we
+note this as a concrete direction rather than a solved case.
+\end{remark}
+
+\subsection{Expressivity Gap: CAREFL vs.\ CNF}
+
+\rev{\textbf{Proposition 3 (Expressivity Gap).} \textit{Let the true SCM be $Y = f(\mathrm{Pa}(Y), \epsilon)$ with $\epsilon$ drawn from CAREFL's base distribution (standard Gaussian or Laplace), $f$ continuously differentiable and strictly monotone in $\epsilon$, and $\frac{\partial^2 f}{\partial \epsilon^2} \neq 0$ on a set of $(\mathrm{Pa}, \epsilon)$-values of positive probability. Then: (i)~\emph{mechanism level}: the $L^2(p)$ mechanism error $\inf_{a,b} \mathbb{E}\bigl[(f(\mathrm{Pa}, \epsilon) - a(\mathrm{Pa})\epsilon - b(\mathrm{Pa}))^2\bigr]$ of any CAREFL model is bounded away from zero, uniformly in the capacity of the conditioner networks $a, b$; (ii)~\emph{distribution level}: CAREFL's conditionals $p(y \mid \mathrm{pa})$ lie in the location--scale family of its base, so if the true conditional lies outside that family on a positive-measure set of parent values, the conditional distributional error (in $W_2$ or total variation) is also bounded away from zero. In contrast, a CNF can achieve arbitrarily small error in both senses as the capacity of its velocity network increases.}}
+
+\begin{proof}
+CAREFL generates each node by an affine transformation of its own exogenous noise:
+\begin{equation}
+    Y = a(\mathrm{Pa}(Y)) \cdot \epsilon + b(\mathrm{Pa}(Y))
+\end{equation}
+where $a, b$ are arbitrary neural networks of the parent values. Crucially, this is not an artifact of using a single layer: \citet{khemakhem2021causal} show (their Appendix~C) that a composition of affine autoregressive flows under a fixed ordering is \emph{itself} an affine autoregressive flow, so stacking layers preserves this form. The map is therefore \textbf{strictly linear in $\epsilon$}:
+\begin{equation}
+    \frac{\partial^2 Y}{\partial \epsilon^2} = 0 \quad \text{for all } a, b
+\end{equation}
+
+\rev{(i) For each parent value $\mathrm{pa}$, the map $\epsilon \mapsto a(\mathrm{pa})\epsilon + b(\mathrm{pa})$ ranges over the two-dimensional space $\mathrm{span}\{\epsilon, 1\}$; the $L^2(p_\epsilon)$-optimal choice is the orthogonal projection of $f(\mathrm{pa}, \cdot)$ onto that span, and the squared residual is zero iff $f(\mathrm{pa}, \cdot)$ is affine in $\epsilon$. By hypothesis the residual is positive on a positive-probability set of parent values, so its expectation over $\mathrm{Pa}$ is a positive constant independent of the capacity of $a, b$---capacity only helps choose the per-$\mathrm{pa}$ coefficients, which are already optimal. (ii) An affine map of the base variable has conditional law $a(\mathrm{pa})\,\epsilon + b(\mathrm{pa})$, i.e.\ a location--scale transform of the base density; the achievable conditionals are exactly that family. If the true conditional is outside the family for a positive-measure set of $\mathrm{pa}$, its distance to the family (in $W_2$ or TV, both of which metrize the gap to a closed location--scale family on compact sets) is positive there, and the expected conditional error is bounded below by a positive constant.}
+
+In contrast, Continuous Normalizing Flows (CNFs) parameterize the transformation as the solution to an ODE:
+\begin{equation}
+    Y = \phi_1(\epsilon) = \epsilon + \int_0^1 v_t(\phi_t(\epsilon), \mathrm{Pa}(Y), t) \, dt
+\end{equation}
+For the scalar exogenous noise of a structural equation, the flow of a Neural ODE realizes an arbitrary smooth \emph{monotone} map $\epsilon \mapsto Y$, which is precisely the class of invertible scalar mechanisms; more generally, Neural ODEs are universal approximators of homeomorphisms given dimension augmentation \citep{zhang2020approximationcapabilitiesneuralodes}. In either case the mechanism can be approximated to arbitrary precision, so the approximation error $\to 0$ as the capacity of $v_t$ increases.
+\end{proof}
+
+\begin{remark}[The gap holds for the full CAREFL model, not just one layer]
+Because composing affine autoregressive flows under a fixed ordering yields another affine autoregressive flow \citep[Appendix~C]{khemakhem2021causal}, the identity $\partial^2 Y/\partial\epsilon^2 = 0$ holds for the entire stacked CAREFL model used in practice, not merely a single layer; the proposition is therefore not an artifact of restricting the baseline's depth. The companion fact that affine/additive flows are not universal density approximators is their Appendix~B. The CNF escapes this constraint while retaining the single-transform structural reading on which our abduction step for counterfactuals (Section~\ref{sec:counterfactuals}) relies.
+\end{remark}
+\subsection{Recovery of the Causal Hierarchy}
+\label{app:hierarchy}
+
+This section answers the question left open by Remark~\ref{rem:cf-identifiability}: under
+what conditions does a causally-aligned StructFlow converge to the \emph{true}
+interventional and counterfactual distributions, rather than merely to the true
+observational joint? The answer separates into three claims of decreasing strength, and the
+third is a negative result.
+
+\subsubsection{Setup}
+
+Let $\mathcal{G}$ be a DAG on blocks $x^{(1)},\dots,x^{(K)}$ listed in topological order,
+$x^{(k)} \in \mathbb{R}^{d_k}$, with data generated by a structural causal model
+\begin{equation}
+\label{eq:scm}
+  \mathcal{M}: \quad x^{(k)} = f_k\bigl(x^{(\mathrm{Pa}(k))},\, \epsilon_k\bigr),
+  \qquad \epsilon_1,\dots,\epsilon_K \ \text{mutually independent},
+\end{equation}
+satisfying Assumption~\ref{ass:standard}(i)--(ii). Write $p$ for the induced
+joint, $p_{\mathrm{do}(x^{(I)}=a)}$ for the law under a hard intervention on the index set
+$I$, and $p_0 = \mathcal{N}(0, I_d)$ for the base measure, partitioned conformally as
+$u = (u_1,\dots,u_K)$. A \emph{causally-aligned} StructFlow is the CNF of
+Section~\ref{sec:block-triangular} whose $k$-th velocity block reads
+$v^{(k)}_\phi\bigl(x^{(k)}_t, x^{(\mathrm{Pa}(k))}_t, t\bigr)$, with flow map $\phi_1$ and
+induced law $\hat p = (\phi_1)_\# p_0$.
+
+\subsubsection{The learned flow is itself an SCM}
+
+Proposition~\ref{prop:structural-preservation} states that the flow \emph{map} is
+block-triangular. The following strengthens this: block $k$ depends on its parents only
+through their \emph{terminal} values, so the flow map is literally a set of structural
+equations driven by independent noise. This is the $K$-block generalisation of Lemma~1 of
+\citet{jeong_conditional_2025}, which treats the two-block case
+$T(y_0,\theta_0) = (F(y_0), G(F(y_0),\theta_0))$.
+
+\begin{lemma}[Mechanism factorisation]
+\label{lem:mech}
+Let $\phi_1$ be the flow map of a causally-aligned StructFlow whose velocity field satisfies
+the conditions of Proposition~\ref{prop:structural-preservation} and is Lipschitz in space.
+Then there exist maps $G_1,\dots,G_K$ such that, for $u \sim p_0$ and $\hat x = \phi_1(u)$,
+\begin{equation}
+\label{eq:learned-scm}
+  \hat x^{(k)} = G_k\bigl(\hat x^{(\mathrm{Pa}(k))},\, u_k\bigr),
+  \qquad k = 1,\dots,K,
+\end{equation}
+with $u_1,\dots,u_K$ mutually independent and each $G_k(\,\cdot\,, w)$ a diffeomorphism in
+$w$ at fixed parent values. That is, \emph{the learned flow is an SCM on $\mathcal{G}$}, and
+$G_k$ is the Knothe--Rosenblatt (KR) rearrangement pushing $\mathcal{N}(0,I_{d_k})$ onto
+$\hat p\bigl(x^{(k)} \mid x^{(\mathrm{Pa}(k))}\bigr)$.
+\end{lemma}
+
+\begin{proof}
+By induction on the topological order. For $k=1$, $\mathrm{Pa}(1)=\emptyset$ and
+$dx^{(1)}_t/dt = v^{(1)}(x^{(1)}_t,t)$ is closed in $x^{(1)}$, so $\hat x^{(1)} = G_1(u_1)$
+with $G_1$ the time-$1$ flow of $v^{(1)}$, a diffeomorphism by Picard--Lindel\"of and the
+Lipschitz hypothesis.
+
+Assume the claim for all $j<k$. By the induction hypothesis and block-triangularity, the
+trajectory $\{x^{(\mathrm{Pa}(k))}_t\}_{t\in[0,1]}$ is a deterministic function of $u_{<k}$,
+and---since each $G_j$ is invertible---equivalently a deterministic function of the terminal
+values $\hat x^{(\mathrm{Pa}(k))}$. Conditionally on that trajectory,
+\begin{equation}
+  \frac{dx^{(k)}_t}{dt} \;=\; \tilde v_t\bigl(x^{(k)}_t\bigr)
+  \;:=\; v^{(k)}\bigl(x^{(k)}_t, x^{(\mathrm{Pa}(k))}_t, t\bigr)
+\end{equation}
+is a non-autonomous ODE in $x^{(k)}$ alone, whose time-$1$ map is a diffeomorphism of
+$\mathbb{R}^{d_k}$. Composing with the trajectory-to-terminal-value identification gives
+\eqref{eq:learned-scm}. Independence of the $u_k$ is that of the base blocks, and uniqueness
+of the KR rearrangement \citep{Rosenblatt1952, Knothe1957} under the fixed within-block
+ordering identifies $G_k$ as stated.
+\end{proof}
+
+\begin{remark}[Static and dynamic conditioning induce the same mechanism]
+\label{rem:static-dynamic-equal}
+The proof shows that $G_k$ depends on the parent trajectory only through its endpoint,
+because the trajectory is a bijective image of that endpoint. In the population limit,
+static and dynamic conditioning therefore realise the \emph{same} structural mechanism. This
+also justifies the backward-integration step in the Action stage of
+Section~\ref{sec:counterfactuals}: realising $\mathrm{do}(x^{(k)} = a)$ in a dynamic flow
+requires the trajectory $a_t = F^{(k)}_t\bigl((F^{(k)}_1)^{-1}(a)\bigr)$, since this is the
+unique trajectory with endpoint $a$, and it is exactly what the downstream blocks were
+trained to read. The empirical static/dynamic gap on counterfactuals
+(Section~\ref{sec:experiments}) is thus an approximation and numerical-inversion effect, not
+a difference in the target object.
+\end{remark}
+
+\subsubsection{Level 2: interventions are recovered from the joint}
+
+\begin{theorem}[Interventional recovery]
+\label{thm:level2}
+Assume \eqref{eq:scm} with Assumption~\ref{ass:standard}(i)--(ii), let the
+StructFlow be causally aligned to the true $\mathcal{G}$, and suppose $\hat p = p$. Then for
+every index set $I$ and value $a$,
+$\hat p_{\,\mathrm{do}(x^{(I)}=a)} = p_{\,\mathrm{do}(x^{(I)}=a)}$, where the left-hand side
+is the law obtained by clamping the blocks in $I$ to $a$ and integrating the remaining blocks
+as usual. \emph{No restriction on the functional form of the $f_k$ is required.}
+\end{theorem}
+
+\begin{proof}
+Matching joints have matching conditionals, so for every $k$,
+$\hat p\bigl(x^{(k)} \mid x^{(1:k-1)}\bigr) = p\bigl(x^{(k)} \mid x^{(1:k-1)}\bigr)
+= p\bigl(x^{(k)} \mid x^{(\mathrm{Pa}(k))}\bigr)$ ($p$-a.e.), the last step by the local
+Markov property. By Lemma~\ref{lem:mech}, block $k$'s mechanism $G_k$ reads only
+$x^{(\mathrm{Pa}(k))}$, so the two agree as \emph{mechanisms}, not merely as conditionals.
+Clamping the blocks in $I$ leaves every other $G_k$ unchanged---possible precisely because
+$\mathrm{Pa}(k) \subseteq \{1,\dots,k-1\}$ means no non-clamped block reads a clamped block
+except through its parent slot---so the sampled law is
+\begin{equation}
+  \hat p_{\,\mathrm{do}(x^{(I)}=a)}(x) = \prod_{k \notin I}
+  \hat p\bigl(x^{(k)} \mid x^{(\mathrm{Pa}(k))}\bigr)\Big|_{x^{(I)}=a}
+  = \prod_{k \notin I} p\bigl(x^{(k)} \mid x^{(\mathrm{Pa}(k))}\bigr)\Big|_{x^{(I)}=a},
+\end{equation}
+which is Pearl's truncated factorisation, i.e.\ $p_{\,\mathrm{do}(x^{(I)}=a)}$
+\citep[Thm.~3.2.2]{Pearl2009}.
+\end{proof}
+
+Level~2 therefore needs no identifiability condition beyond a correct graph: it is a
+corollary of observational consistency. Combined with \citet{jeong_conditional_2025} this
+yields a large-sample statement.
+
+\begin{corollary}[Consistency of interventional queries]
+\label{cor:level2-consistency}
+Under the regularity conditions of \citet[Assumptions 1--4]{jeong_conditional_2025}, a
+causally-aligned StructFlow trained by flow matching on $N$ i.i.d.\ samples from $p$
+\cam{(with static conditioning, or with dynamic conditioning trained under the per-block coupling of Proposition~\ref{prop:kr-coupling}; otherwise the flow-matching loss of a block-triangular field has a positive floor, Remark~\ref{rem:dynamic-consistency})}
+satisfies $\hat p_{\,\mathrm{do}(x^{(I)}=a)} \to p_{\,\mathrm{do}(x^{(I)}=a)}$ as
+$N \to \infty$ for $p$-almost every $a$. Quantitatively, if the flow-matching loss is at most
+$\varepsilon_N^2$ and each $f_k$ is $\ell$-Lipschitz in its parents,
+\begin{equation}
+\label{eq:overlap-bound}
+  \mathbb{E}\Bigl[\,W_2^2\bigl(\hat p_{\,\mathrm{do}(x^{(I)}=A)},\,
+  p_{\,\mathrm{do}(x^{(I)}=A)}\bigr)\Bigr]
+  \;\le\; C\bigl(\ell, \mathrm{depth}(\mathcal{G})\bigr)\; \kappa_I \; \varepsilon_N^2 ,
+\end{equation}
+where $A \sim q$ for any distribution $q$ over intervention values and
+$\kappa_I = \bigl\| \mathrm{d}q / \mathrm{d}p(x^{(I)}) \bigr\|_\infty$ is an overlap constant.
+\end{corollary}
+
+\begin{proof}[Proof sketch]
+Theorem~2 of \citet{jeong_conditional_2025} gives $\varepsilon_N \to 0$ a.s.\ for ReLU MLP
+velocity fields over a Sobolev ball; their Theorem~1 converts this into
+$\mathbb{E}_{p}\bigl[W_2^2(\hat p(\cdot\mid Y), p(\cdot \mid Y))\bigr] \le
+2Le^{2L}\varepsilon_N^2$ for a two-block split, with $L=\int_0^1 L_t\,dt$ the integrated
+Lipschitz constant of the velocity. Applying that bound blockwise via Lemma~\ref{lem:mech}
+and propagating along the topological order with the mechanism Lipschitz constant $\ell$
+gives $C(\ell,\mathrm{depth})$, which grows like $\prod_k(1+\ell)$ along the longest directed
+path: error compounds with graph \emph{depth}, not node count. The factor $\kappa_I$ appears
+because the flow-matching loss controls error only in $p$-average over parent configurations,
+whereas an intervention evaluates the mechanism at values drawn from $q$; the change of
+measure costs a density ratio.
+\end{proof}
+
+\begin{remark}[The overlap constant is not removable]
+\label{rem:overlap}
+Equation~\eqref{eq:overlap-bound} is vacuous for intervention values outside the support of
+$p(x^{(I)})$. This is not an artefact of the proof: an observationally-trained model has no
+information about mechanism behaviour at parent configurations it never saw, and clamping is
+exactly an out-of-distribution evaluation of the velocity field. This is the positivity /
+overlap condition of classical causal inference reappearing, and it delimits the scope of any
+claim that interventions come for free from observational data.
+\end{remark}
+
+\subsubsection{Level 3: counterfactuals under invertible mechanisms}
+
+The counterfactual level is where functional form begins to matter. The key observation is
+that for a broad class of mechanisms the KR rearrangement the flow is forced to learn
+coincides with the true mechanism \emph{up to a reparameterisation of the noise that cancels
+between abduction and prediction}.
+
+\begin{theorem}[Counterfactual recovery]
+\label{thm:level3}
+Assume the setting of Theorem~\ref{thm:level2} ($\hat p = p$, correct $\mathcal{G}$), and in
+addition that each mechanism satisfies one of:
+\begin{enumerate}
+  \item[(a)] \textbf{Scalar bijective:} $d_k = 1$, $\epsilon_k \in \mathbb{R}$ with continuous
+  strictly increasing c.d.f.\ $F_{\epsilon_k}$, and $\varepsilon \mapsto
+  f_k(\mathrm{pa}, \varepsilon)$ strictly increasing for every $\mathrm{pa}$; or
+  \item[(b)] \textbf{Additive:} $f_k(\mathrm{pa}, \epsilon_k) = g_k(\mathrm{pa}) + \epsilon_k$
+  with $\epsilon_k \in \mathbb{R}^{d_k}$ arbitrarily distributed.
+\end{enumerate}
+Then abduction--action--prediction (Section~\ref{sec:counterfactuals}) executed on the learned
+flow returns \emph{exactly} the true counterfactual:
+$\hat x_{\mathrm{cf}} = x_{\mathrm{cf}} =
+\mathcal{M}_{\mathrm{do}(x^{(I)}=a)}\bigl(\epsilon(x_{\mathrm{obs}})\bigr)$.
+Linear structural equations $x^{(k)} = B_k x^{(\mathrm{Pa}(k))} + \epsilon_k$ satisfy (b), and
+when $d_k=1$ also (a); counterfactuals in linear SCMs---Gaussian or not---are therefore
+recovered exactly.
+\end{theorem}
+
+\begin{proof}
+\emph{Case (a).} Fix $k$ and parent values $\mathrm{pa}$. Strict monotonicity gives
+$F_{x^{(k)}\mid \mathrm{pa}}\bigl(f_k(\mathrm{pa},\varepsilon)\bigr) = F_{\epsilon_k}(\varepsilon)$,
+hence
+\begin{equation}
+\label{eq:reparam}
+  f_k(\mathrm{pa}, \varepsilon)
+  = F^{-1}_{x^{(k)}\mid \mathrm{pa}}\bigl(F_{\epsilon_k}(\varepsilon)\bigr)
+  = G_k\bigl(\mathrm{pa},\, r_k(\varepsilon)\bigr),
+  \qquad r_k := \Phi^{-1} \circ F_{\epsilon_k},
+\end{equation}
+where $G_k(\mathrm{pa}, w) = F^{-1}_{x^{(k)}\mid \mathrm{pa}}(\Phi(w))$ is the scalar KR map,
+which by Lemma~\ref{lem:mech} and $\hat p = p$ is exactly the learned mechanism. Crucially
+$r_k$ does not depend on $\mathrm{pa}$. Abduction in topological order therefore yields
+$\hat u_k = G_k^{-1}\bigl(x^{(\mathrm{Pa}(k))}_{\mathrm{obs}},\,x^{(k)}_{\mathrm{obs}}\bigr)
+= r_k(\epsilon_k)$: the true exogenous noise up to the fixed monotone reparameterisation
+$r_k$. Prediction with counterfactual parents $\mathrm{pa}'$ (computed recursively, the base
+case being the clamped blocks) gives
+\begin{equation}
+  \hat x^{(k)}_{\mathrm{cf}} = G_k(\mathrm{pa}', \hat u_k)
+  = G_k\bigl(\mathrm{pa}', r_k(\epsilon_k)\bigr)
+  = f_k(\mathrm{pa}', \epsilon_k) = x^{(k)}_{\mathrm{cf}},
+\end{equation}
+the reparameterisation cancelling. Induction over the topological order completes the case.
+
+\emph{Case (b).} For additive noise the conditional law is
+$p\bigl(x^{(k)} \mid \mathrm{pa}\bigr) = p_{\epsilon_k}\bigl(\cdot - g_k(\mathrm{pa})\bigr)$,
+a pure translate of a fixed law. We claim its KR map is the corresponding translate of the KR
+map $T_k$ of $p_{\epsilon_k}$, i.e.\ $G_k(\mathrm{pa}, w) = g_k(\mathrm{pa}) + T_k(w)$. For
+the first within-block coordinate,
+$F^{-1}_{x^{(k),1}\mid \mathrm{pa}}(\Phi(w^1)) = g_k^1(\mathrm{pa}) +
+F^{-1}_{\epsilon_k^1}(\Phi(w^1))$. Inductively, conditioning on $x^{(k),1:j-1}$ is equivalent
+to conditioning on $\epsilon_k^{1:j-1} = x^{(k),1:j-1} - g_k^{1:j-1}(\mathrm{pa})$, whose value
+under the induction hypothesis is $T_k^{1:j-1}(w^{1:j-1})$ and is independent of
+$\mathrm{pa}$; so coordinate $j$ is again a $\mathrm{pa}$-shift of a fixed conditional
+quantile. Hence
+\begin{equation}
+  \hat u_k = T_k^{-1}\bigl(x^{(k)}_{\mathrm{obs}} - g_k(\mathrm{pa}_{\mathrm{obs}})\bigr)
+           = T_k^{-1}(\epsilon_k),
+  \qquad
+  \hat x^{(k)}_{\mathrm{cf}} = g_k(\mathrm{pa}') + T_k(\hat u_k)
+           = g_k(\mathrm{pa}') + \epsilon_k = x^{(k)}_{\mathrm{cf}} .
+\end{equation}
+\end{proof}
+
+\begin{remark}[The linear case, explicitly]
+\label{rem:linear-explicit}
+For $x = Bx + \epsilon$ with $B$ strictly lower-triangular in topological order, the true
+mechanism is $x^{(k)} = B_k x^{(\mathrm{Pa}(k))} + A_k u_k$ for \emph{any} square root
+$A_kA_k^\top = \mathrm{Cov}(\epsilon_k)$, whereas KR uniqueness forces the flow to learn the
+Cholesky factor $L_k$. The two noise assignments differ, yet the counterfactual is invariant:
+\begin{equation}
+  \hat x^{(k)}_{\mathrm{cf}}
+  = B_k \mathrm{pa}' + L_k L_k^{-1}\bigl(x^{(k)}_{\mathrm{obs}} - B_k \mathrm{pa}_{\mathrm{obs}}\bigr)
+  = B_k\bigl(\mathrm{pa}' - \mathrm{pa}_{\mathrm{obs}}\bigr) + x^{(k)}_{\mathrm{obs}},
+\end{equation}
+which is the true counterfactual and involves neither $A_k$ nor $L_k$. In the linear case the
+only quantity that must be estimated correctly is the regression matrix $B$, which the joint
+identifies given $\mathcal{G}$.
+\end{remark}
+
+\begin{remark}[Where Theorem~\ref{thm:level3} does not apply]
+\label{rem:l3-limits}
+Condition (a) is the bijective-SCM condition of \citet{nasresfahany2023bijective}; condition
+(b) is the additive-noise condition. Both fail for a \emph{multivariate, non-additive} block,
+where the true noise-to-value map need not be triangular in the within-block ordering and KR
+uniqueness then selects a different---observationally indistinguishable---mechanism. The image
+block of the Colored-MNIST model (Section~\ref{sec:colored-mnist}) is of this kind, so its
+counterfactuals remain model-based estimates. Our scalar-node synthetic benchmarks
+(Appendix~\ref{app:experiments}), whose mechanisms are invertible in a scalar noise by
+construction, fall under case (a) and are covered by the theorem.
+\end{remark}
+
+\subsubsection{Level 0: the graph is the binding constraint}
+
+All of the above is conditional on $\mathcal{G}$ being the true causal DAG, and that
+assumption cannot be discharged from observational data in the linear--Gaussian case.
+
+\begin{proposition}[Non-identifiability of the linear--Gaussian graph]
+\label{prop:mec}
+Let $p$ be generated by a linear--Gaussian SCM on $\mathcal{G}$. For every DAG $\mathcal{G}'$
+in the Markov equivalence class of $\mathcal{G}$ there is a linear--Gaussian SCM on
+$\mathcal{G}'$ inducing the same $p$. Consequently a StructFlow causally aligned to
+$\mathcal{G}'$ attains the same optimal flow-matching loss as one aligned to $\mathcal{G}$,
+while in general returning different---and incorrect---interventional and counterfactual
+answers.
+\end{proposition}
+
+\begin{proof}
+The first claim is standard \citep{Peters2017}: Markov-equivalent DAGs encode the same
+conditional independencies, and any Gaussian distribution Markov to $\mathcal{G}'$ factorises
+as a linear--Gaussian SCM on $\mathcal{G}'$ via successive regressions. Since the
+flow-matching optimum depends on the architecture only through the family of joints it can
+represent, and both aligned architectures represent $p$ exactly, both attain the same loss.
+Concretely, for $X \to Y$ with $(X,Y)$ standard bivariate normal of correlation $\rho$, the
+reversed model $Y \to X$ reproduces $p$ exactly but yields
+$\hat p\bigl(y \mid \mathrm{do}(x)\bigr) = \mathcal{N}(0,1) \neq
+\mathcal{N}\bigl(\rho x, 1-\rho^2\bigr) = p\bigl(y \mid \mathrm{do}(x)\bigr)$.
+\end{proof}
+
+Gaussianity is doing all the damage here, and dropping it repairs the chain.
+
+\begin{corollary}[End-to-end recovery for linear non-Gaussian SCMs]
+\label{cor:lingam}
+Suppose the data are generated by a linear SCM $x = Bx + \epsilon$ with mutually independent,
+non-Gaussian $\epsilon_k$ of finite variance (a LiNGAM model,
+\citealp{shimizu2006lingam}). Then $\mathcal{G}$ and $B$ are identified from $p$ alone, and a
+StructFlow aligned to the identified graph and fitted consistently recovers, in the
+large-sample limit, the true observational, interventional \emph{and} counterfactual
+distributions---all three levels of Pearl's hierarchy. The same holds for linear--Gaussian
+SCMs with equal error variances \citep{peters2014identifiability} and for non-linear
+additive-noise models with identifiable structure \citep{hoyer2008nonlinear}.
+\end{corollary}
+
+\begin{proof}
+Identifiability of $(\mathcal{G}, B)$ is \citet{shimizu2006lingam}. Given the identified
+$\mathcal{G}$, Theorem~\ref{thm:level2} and Corollary~\ref{cor:level2-consistency} give the
+interventional claim, and Theorem~\ref{thm:level3}(b) the counterfactual claim, linear
+mechanisms being additive.
+\end{proof}
+
+\begin{remark}[Summary, and the honest split verdict]
+\label{rem:hierarchy-summary}
+\emph{Given} the causal graph, a consistently trained causally-aligned StructFlow provably
+reaches Level~2 for arbitrary mechanisms (Theorem~\ref{thm:level2}) and Level~3 for
+scalar-bijective or additive mechanisms (Theorem~\ref{thm:level3}), linear problems being the
+easiest instance of both. What a flow trained on observational data \emph{cannot} do is
+discover the graph in the linear--Gaussian setting (Proposition~\ref{prop:mec}): there, the
+very Gaussianity that makes the interventional and counterfactual algebra trivial makes the
+causal direction invisible. Structure discovery is therefore not merely orthogonal to our
+framework but is the \emph{sole remaining gap} between StructFlow's guarantees and a claim of
+full causal identification.
+\end{remark}
+
+\subsection{Abduction Fidelity: Flow Inversion vs.\ DDIM Inversion}
+\label{app:inversion}
+
+Counterfactual reasoning at Level~3 requires \emph{inverting} the learned map (the Abduction
+step). Theorem~\ref{thm:level3} concerns the exact map; in practice both a CNF and a
+deterministic diffusion sampler realise it only approximately, and the two approximations
+have different characters. Since diffusion-based causal models
+\citep{sanchez2022diffusion, chao2023interventional} perform abduction by DDIM inversion,
+this is the one place where the choice of backbone---rather than the choice of
+structure---has a measurable consequence.
+
+\begin{proposition}[Abduction error]
+\label{prop:abduction-error}
+Let $\phi_1$ be the flow map of a CNF and let $\hat\phi_1^{-1}$ denote numerical abduction.
+\begin{enumerate}
+  \item For a CNF, $\phi_1$ is \emph{defined} as the solution of an ODE. Forward and reverse
+  passes integrate the same field $v_t$, so the reconstruction error
+  $\|\hat\phi_1^{-1}(\phi_1(u)) - u\|$ is a pure ODE integration error: it is $O(h^{\,p})$
+  for a $p$-th order scheme and is controllable to arbitrary tolerance by adaptive step-size
+  control at fixed model weights.
+  \item For a DDIM sampler at $N$ steps, the generative map is \emph{defined} by the discrete
+  chain. Its standard inversion is not the algebraic inverse of that chain: it additionally
+  assumes $\epsilon_\theta(x_t,t) \approx \epsilon_\theta(x_{t-1},t-1)$ across a step. The
+  resulting reconstruction error therefore carries a first-order term in the step size that
+  no tolerance parameter removes; it vanishes only as $N \to \infty$, which is precisely the
+  limit in which the DDIM chain converges to the probability-flow ODE.
+\end{enumerate}
+\end{proposition}
+
+\begin{remark}[Interpretation]
+\label{rem:inversion-interp}
+Proposition~\ref{prop:abduction-error} should not be read as ``diffusion models cannot do
+counterfactuals''---they demonstrably can \citep{sanchez2022diffusion, chao2023interventional},
+and we say so in Section~\ref{sec:experiments}. It should be read as a statement about
+\emph{where the error budget goes}. Abduction fidelity is a solver-tolerance question for a
+CNF and a step-count question for a DDIM sampler, and the step-count limit that removes the
+DDIM bias is the limit in which the sampler becomes the continuous-time flow. This yields a
+falsifiable prediction, which we test in Section~\ref{sec:backbone-ablation}: at matched
+sampling compute (number of function evaluations), counterfactual accuracy should degrade
+more sharply for a diffusion backbone than for a CNF backbone, while interventional accuracy
+---which requires no inversion---should be comparable.
+\end{remark}

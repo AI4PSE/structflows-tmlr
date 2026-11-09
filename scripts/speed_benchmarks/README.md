@@ -1,0 +1,3 @@
+- static v dynamic sampling.
+- dynamic: dense v sparse in flattened net.
+- static: group-by-signature v ungrouped.
