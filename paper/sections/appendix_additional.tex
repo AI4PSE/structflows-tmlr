@@ -28,7 +28,6 @@ Zhai et al.\ \citep{jeong_conditional_2025}     & \xmark & \xmark & \cmark & \xm
 \end{tabular}
 \end{table}
 
-
 \subsection{MNIST}
 
 We additionally evaluate on MNIST digit generation with the simple two-node structure \texttt{labels}$\to$\texttt{images}, a sanity check at higher dimensionality (784 pixels vs.\ 4 scalar variables in the synthetic PGMs).
@@ -36,7 +35,6 @@ We additionally evaluate on MNIST digit generation with the simple two-node stru
 \rev{\paragraph{Discrete labels in a continuous flow.} The label block is embedded as a one-hot vector in $\mathbb{R}^{10}$ (standardized by the same mean/variance normalizer as every block; no dequantization noise is added). The flow-matching objective is well-defined for such discrete targets: the linear interpolant $y_t = (1-t)\varepsilon + t\,y_1$ has a density for every $t < 1$ even when $y_1$ is drawn from a mixture of point masses, so the regression target exists almost everywhere and the learned transport concentrates its mass near the one-hot vertices. Sampled labels are decoded by $\arg\max$, and conditioning on a label clamps its (normalized) one-hot block. The colored-MNIST digit variable receives the identical treatment (its color variable, by contrast, is genuinely continuous: a palette color plus Gaussian jitter).}
 
 \paragraph{Results.} All flow-based methods successfully learn the joint and marginal distributions (Figure~\ref{fig:mnist-swd}, Appendix~\ref{app:results}), but dynamic conditioning exhibits notably higher SWD on the conditional $p(\text{images}|\text{labels})$ despite accurately representing the joint. This is a genuine distributional gap rather than an outlier artifact (full diagnostic in Appendix~\ref{app:results}): inspecting samples shows dynamic conditioning produces \emph{perceptually crisp} digits that occasionally render the \emph{wrong class} for the conditioning label---a broadly-distributed conditional error that raises SWD while leaving individual samples realistic. Section~\ref{sec:chain-stiffness} isolates the mechanism behind this gap: dynamic conditioning's clamped condition trajectories leave the training distribution as evidence becomes higher-dimensional and more informative, an error that solver effort does not repair.
-
 
 \subsection{When Does Structure Help? A Sample-Efficiency Study}
 \label{sec:sample-efficiency}
@@ -91,12 +89,11 @@ entries at all, that is direct evidence that the compiled structure---not the ch
 continuous-time generative model---is what delivers the capabilities of
 Table~\ref{tab:capability}.
 
-
 \subsection{Inference Alignment: Amortized Probabilistic Inference}
 
 For Inference Alignment, we use StructFlow to ``invert'' the DAG---edges point from children to parents, with additional edges via moralization. This enables efficient sampling from posterior distributions $p(\text{parents} | \text{children})$.
 
-\paragraph{Results.} Figure \ref{fig:inference-nonlinear-pgm} shows that our structured flows can effectively learn to perform probabilistic inference, providing accurate amortized inference over the model's latent variables. On these small, well-sampled nonlinear PGMs all methods perform comparably---including the unstructured \textit{Guided} baseline. This is expected rather than contradictory: the Guided flow places dependencies between \emph{all} variables, so it implicitly contains the moral edges that the posterior requires. The ablation in Section~\ref{sec:moralization-ablation} isolates this effect, showing that the relevant structural ingredient is exactly the moralization our compiler performs; and Section~\ref{sec:sample-efficiency} shows that the benefit of \emph{sparse} structure (over a dense, unstructured flow) emerges when training data are limited. The same qualitative picture holds on larger random $8$-node nonlinear PGMs, confirming the framework is not limited to very small graphs (Appendix~\ref{app:results}, Figure~\ref{fig:inference-n8}); the binding constraint on scaling further is \emph{evaluation}---generating MCMC ground truth for every conditional query (Section~\ref{sec:future_work})---not training.
+\paragraph{Results.} Figure \ref{fig:inference-nonlinear-pgm} shows that our structured flows can effectively learn to perform probabilistic inference, providing accurate amortized inference over the model's latent variables. \cam{On these small, well-sampled nonlinear PGMs the inference-aligned static flow is as accurate as the unstructured universal flow and ${\sim}2\times$ more accurate than Dynamic, Guided and CAREFL. That an unstructured flow does as well is expected rather than contradictory: it places dependencies between \emph{all} variables, so it implicitly contains the moral edges that the posterior requires.} The ablation in Section~\ref{sec:moralization-ablation} isolates this effect, showing that the relevant structural ingredient is exactly the moralization our compiler performs; and Section~\ref{sec:sample-efficiency} shows that the benefit of \emph{sparse} structure (over a dense, unstructured flow) emerges when training data are limited. The same qualitative picture holds on larger random $8$-node nonlinear PGMs, confirming the framework is not limited to very small graphs (Appendix~\ref{app:results}, Figure~\ref{fig:inference-n8}); the binding constraint on scaling further is \emph{evaluation}---generating MCMC ground truth for every conditional query (Section~\ref{sec:future_work})---not training.
 
 \subsection{Ablation: Is Moralization Necessary?}
 \label{sec:moralization-ablation}
@@ -139,7 +136,6 @@ A practical advantage of Inference Alignment is \emph{amortization}: the flow is
     \caption{\textbf{Amortized inference vs.\ per-query MCMC} on a nonlinear collider. Left: cumulative wall-clock versus the number of distinct posterior queries; the amortized flow overtakes NUTS after $K^\star \approx 22$ queries. Right: per-query agreement between StructFlow and the NUTS reference (Sliced Wasserstein distance).}
     \label{fig:amortization}
 \end{figure}
-
 
 \subsection{Colored-MNIST: Intervene-vs-Observe Heatmaps}
 

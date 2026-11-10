@@ -52,7 +52,7 @@ Let the state $y$ be partitioned into blocks $y^{(1)}, \dots, y^{(K)}$. By defin
     \begin{equation}
         \hat{\eta}_1^{(k)}(y, t) = \text{NN}^{(k)}(y^{(1)}, \dots, y^{(k)}, t)
     \end{equation}
-    
+
     \item \textbf{Affine Property:} For the linear interpolant used in this work ($y_t = (1-t)y_0 + ty_1$), the velocity field $v_t(y)$ is an affine combination of the input $y$ and the denoiser $\hat{\eta}_1$:
     \begin{equation}
         v_t(y) = \frac{\hat{\eta}_1(y, t) - y}{1 - t}

@@ -35,7 +35,7 @@ The block-triangular structure is realized purely through the connectivity of th
 \begin{proposition}[Structural Preservation]
 \label{prop:structural-preservation}
 \rev{Assume velocity fields regular enough for unique, continuously differentiable flows (existence--uniqueness and spatial Lipschitzness, as in \citet{jeong_conditional_2025}, Assumptions~1--2). Parameterize the velocity through a denoiser $\hat{\eta}_1$ under the linear interpolant $y_t = (1-t)y_0 + t y_1$. (i)~If the $k$-th block depends only on the prefix, $\hat{\eta}_1^{(k)}(y, t) = \mathrm{NN}^{(k)}(y^{(1)}, \dots, y^{(k)}, t)$, the induced velocity and flow map are block-triangular and the learned density factorizes autoregressively along the ordering. (ii)~If block $k$ depends only on its graph parents, the jointly-integrated flow map depends on the base noise of $\{k\} \cup \mathrm{Anc}(k)$, refining the conditionals to ancestor sets---ancestral, not yet parental, sparsity. (iii)~Sequential integration with parents resolved to their final values (static conditioning, the causal-mode sampler) sharpens this to the Markov factorization $p(y) = \prod_k p\bigl(y^{(k)} \mid y^{(\mathrm{Pa}(k))}\bigr)$ of $\mathcal{G}$.}
-\end{proposition} 
+\end{proposition}
 
 This is the architectural guarantee underlying StructFlow (proof in Appendix~\ref{app:proof}): constraining \emph{which inputs each block of the network sees} makes the transport respect the graph, \rev{with the exact granularity---prefix, ancestral, or parental---set by the masking and the integration schedule}. The same structure, however, makes density computation \emph{order-dependent}:
 
@@ -131,7 +131,6 @@ In static mode, conditioning variables are first integrated to completion, then 
     \frac{\partial \theta_t}{\partial t} = v^{(\Theta)}_\phi(\theta_t, y_1, t)
 \end{equation}
 Sampling proceeds sequentially---one ODE solve per block, each block conditioned on the terminal values of its already-integrated parents---so a flow with $K$ target blocks requires $K+1$ sequential solves.
-
 
 \paragraph{Dynamic Conditioning.}
 In dynamic mode, all variables are integrated \emph{simultaneously} in a single ODE solve. The target velocity field is conditioned on the \emph{time-evolving trajectory} of the conditioning variables:

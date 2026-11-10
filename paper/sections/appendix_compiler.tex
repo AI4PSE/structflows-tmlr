@@ -95,40 +95,6 @@ Figures~\ref{fig:example-pgm-compilation-41} and~\ref{fig:example-pgm-compilatio
     \label{fig:example-pgm-compilation-41}
 \end{figure}
 
-
-% \begin{figure}[hbt!]
-%     \centering
-%     \includegraphics[width=\columnwidth]{images/pgm_compilation_visualization_42_4.png}
-%     \caption{An example of the PGM compiler ($n=4$, Seed 42). We start with the given structure / DAG. This can be used to define the dependencies within our structured flows (and competitors) - top row. Alternatively, we can compile these structures for inference, yielding a different DAG, which supports inference queries.}
-%     \label{fig:example-pgm-compilation-42}
-% \end{figure}
-
-% \begin{table}[hbt!]
-%     \centering
-%     \caption{Supported distributions for Example Seed 41 (Figure \ref{fig:example-pgm-compilation-41}) and Seed 42 (Figure \ref{fig:example-pgm-compilation-42}). The compiler identifies these marginals and conditionals as tractable given the block-triangular structure.}
-%     \label{tab:supported-distributions}
-%     \begin{tabular}{llp{10cm}}
-%         \toprule
-%         Example & Row & Supported Distributions \\
-%         \midrule
-%         Seed 41 & Causal & $p(x_0)$, $p(x_0, x_1)$, $p(x_0, x_1, x_2)$, $p(x_0, x_1, x_2, x_3)$, $p(x_1 \mid x_0)$, $p(x_1, x_2 \mid x_0)$, $p(x_1, x_2, x_3 \mid x_0)$, $p(x_2 \mid x_0, x_1)$, $p(x_2, x_3 \mid x_0, x_1)$, $p(x_3 \mid x_0, x_1, x_2)$, $p(x_3 \mid x_2)$ \\
-%         \addlinespace
-%         & Inference & $p(x_3)$, $p(x_2, x_3)$, $p(x_1, x_2, x_3)$, $p(x_0, x_1, x_2, x_3)$, $p(x_2 \mid x_3)$, $p(x_1, x_2 \mid x_3)$, $p(x_0, x_1, x_2 \mid x_3)$, $p(x_1 \mid x_2, x_3)$, $p(x_1 \mid x_2)$, $p(x_0, x_1 \mid x_2, x_3)$, $p(x_0, x_1 \mid x_2)$, $p(x_0 \mid x_1, x_2, x_3)$, $p(x_0 \mid x_1, x_2)$ \\
-%         \midrule
-%         Seed 42 & Causal & $p(x_0)$, $p(x_0, x_1)$, $p(x_0, x_1, x_2)$, $p(x_0, x_1, x_2, x_3)$, $p(x_1 \mid x_0)$, $p(x_1)$, $p(x_1, x_2 \mid x_0)$, $p(x_1, x_2)$, $p(x_1, x_2, x_3 \mid x_0)$, $p(x_2 \mid x_0, x_1)$, $p(x_2 \mid x_1)$, $p(x_2, x_3 \mid x_0, x_1)$, $p(x_3 \mid x_0, x_1, x_2)$ \\
-%         \addlinespace
-%         & Inference & $p(x_3)$, $p(x_2, x_3)$, $p(x_1, x_2, x_3)$, $p(x_0, x_1, x_2, x_3)$, $p(x_2 \mid x_3)$, $p(x_1, x_2 \mid x_3)$, $p(x_0, x_1, x_2 \mid x_3)$, $p(x_1 \mid x_2, x_3)$, $p(x_0, x_1 \mid x_2, x_3)$, $p(x_0 \mid x_1, x_2, x_3)$ \\
-%         \bottomrule
-%     \end{tabular}
-% \end{table}
-
-% \begin{figure}[hbt!]
-%     \centering
-%     \includegraphics[width=\columnwidth]{images/pgm_compilation_visualization_40_6.png}
-%     \caption{An example of the PGM compiler ($n=6$, Seed 40). We start with the given structure / DAG. This can be used to define the dependencies within our structured flows (and competitors) - top row. Alternatively, we can compile these structures for inference, yielding a different DAG, which supports inference queries.}
-%     \label{fig:example-pgm-compilation-42}
-% \end{figure}
-
 \begin{figure}[hbt!]
     \centering
     \includegraphics[width=0.68\columnwidth]{images/pgm_compilation_visualization_41_6.png}

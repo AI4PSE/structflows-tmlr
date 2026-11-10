@@ -13,6 +13,11 @@ from structflow.conditional_flows.flow_factory import (
 )
 
 
+
+# Couplings that keep each mode consistent (Appendix "Noise--Data Coupling"); used when a
+# config does not set use_coupling. Modes not listed take no coupling argument.
+DEFAULT_COUPLING = {'static': False, 'dynamic': 'c2ot', 'guided': 'hungarian'}
+
 def create_learner(config: Dict[str, Any], structure: Optional[Any] = None):
     """
     Thin wrapper for creating standardised learners from config.
@@ -29,9 +34,10 @@ def create_learner(config: Dict[str, Any], structure: Optional[Any] = None):
             - train_steps: total training steps
             - hidden_dim: network width
             - depth: network depth (default: 3)
-            - use_coupling: True/'joint' (Sinkhorn OT, default), 'hungarian', 'c2ot' or False
+            - use_coupling: True/'joint' (Sinkhorn OT), 'hungarian', 'c2ot' or False;
+              default per mode (DEFAULT_COUPLING: static False, dynamic 'c2ot', guided 'hungarian')
               (see conditional_flows.flow_factory.COUPLING_DOC)
-            - c2ot_target_ratio: adaptive-weight target for use_coupling='c2ot' (default 0.01)
+            - c2ot_target_ratio: adaptive-weight target for use_coupling='c2ot' (default 0.05)
             - use_sparse: for dynamic mode, whether to use sparse interactions (default: False)
             - learner_seed: random seed (default: 0)
             - structure: optional structure dict with 'dependencies', 'block_order', 'dims'
@@ -63,7 +69,7 @@ def create_learner(config: Dict[str, Any], structure: Optional[Any] = None):
         )
 
     # Parse config parameters
-    use_coupling = config.get('use_coupling', True)
+    use_coupling = config.get('use_coupling', DEFAULT_COUPLING.get(mode, False))
     if use_coupling == 'c2ot' and config.get('c2ot_target_ratio') is not None:
         from sinterp.couplings import C2OTCoupling
         use_coupling = C2OTCoupling(target_ratio=config['c2ot_target_ratio'])

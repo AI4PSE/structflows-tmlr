@@ -1,6 +1,6 @@
 """Plot the backbone NFE sweep (static CNF vs per-node DDIM).
 
-Reads results/nonlinear4/backbone_nfe.json (written by
+Reads results/nonlinear4_kr/backbone_nfe.json (written by
 scripts/ablations/backbone_nfe.py) and renders three panels against the
 measured NFE (network calls per sample, log2 axis):
 
@@ -22,7 +22,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 RESULTS = os.environ.get(
-    'NFE_RESULTS', f'{RESULTS}/nonlinear4/backbone_nfe.json')
+    'NFE_RESULTS', f'{RESULTS}/nonlinear4_kr/backbone_nfe.json')
 OUT = f'{IMAGES}/ablations/backbone_nfe.png'
 
 # Okabe-Ito blue / vermillion: CVD-safe pair (validated), fixed assignment.

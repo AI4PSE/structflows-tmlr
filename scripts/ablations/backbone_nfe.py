@@ -23,7 +23,7 @@ Comparing raw step counts would hand the CNF a 4x hidden budget.
 The DCM inversion is the published DDIM inversion (eps re-used at the current
 point, first-order bias) — that bias is the object of study; do not "fix" it.
 
-Output: results/nonlinear4/backbone_nfe.json
+Output: results/nonlinear4_kr/backbone_nfe.json (static from nonlinear4_kr, uncoupled; DCM from nonlinear4)
 Plot:   scripts/plotters/plot_backbone_nfe.py
 
 Run:  ~/my_jax_env/bin/python scripts/ablations/backbone_nfe.py
@@ -48,7 +48,9 @@ from pgm_paper_utils.utils import make_structure, get_test_queries
 from pgm_paper_utils.eval import evaluate_distribution
 
 BASE = os.environ.get('NFE_BASE', f'{RESULTS}/nonlinear4')
-OUT = f'{BASE}/backbone_nfe.json'
+# static runs trained with the paper's coupling for static (none); DCM has no coupling option
+STATIC_BASE = os.environ.get('NFE_STATIC_BASE', f'{RESULTS}/nonlinear4_kr')
+OUT = os.environ.get('NFE_OUT', f'{STATIC_BASE}/backbone_nfe.json')
 CHECKPOINT = 'model_100000.eqx'
 NFES = [4, 8, 16, 32, 64, 128]
 PGM_SEEDS = set(range(5))
@@ -62,12 +64,17 @@ EVAL_SEED = 0
 def find_runs():
     """(run_dir, config) for causal static/dcm runs in the sweep subset."""
     runs = []
-    for d in sorted(glob.glob(f'{BASE}/run_*')):
+    for d in sorted(glob.glob(f'{BASE}/run_*')) + sorted(glob.glob(f'{STATIC_BASE}/run_*')):
         cfg_path = os.path.join(d, 'config.json')
         if not os.path.exists(cfg_path) or not os.path.exists(os.path.join(d, CHECKPOINT)):
             continue
         cfg = json.load(open(cfg_path))
         if cfg.get('mode') not in ('static', 'dcm'):
+            continue
+        base = os.path.dirname(d)
+        if cfg['mode'] == 'dcm' and base != BASE.rstrip('/'):
+            continue
+        if cfg['mode'] == 'static' and (base != STATIC_BASE.rstrip('/') or cfg.get('use_coupling') not in (False, 'false')):
             continue
         if cfg.get('task') != 'causal':
             continue

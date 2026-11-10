@@ -13,7 +13,7 @@ import random as random_py
 
 from structflow.pgms.pgm_compiler import PGMCompiler
 from pgm_paper_utils.pgm_factory import create_pgm
-from pgm_paper_utils.learner_factory import create_learner
+from pgm_paper_utils.learner_factory import create_learner, DEFAULT_COUPLING
 from pgm_paper_utils.infrastructure import count_total_params, get_hidden_dims
 from pgm_paper_utils.utils import generate_run_name, make_structure
 from structflow.pgms.utilities import format_dist_str
@@ -317,10 +317,12 @@ def main(basedir,
         config['learner_seed'] = l_seed
         config['pgm_seed'] = pgm_seed
         config['task'] = task
-        # Only recorded when set: runs without it keep their names (default coupling True).
-        if mode in coupling_by_mode:
-            config['use_coupling'] = coupling_by_mode[mode]
-            if coupling_by_mode[mode] == 'c2ot' and c2ot_target_ratio is not None:
+        # Always recorded for the coupled modes, so a run's name says which coupling trained it
+        # (runs from before the per-mode defaults, which used Sinkhorn OT, never collide).
+        cpl = coupling_by_mode.get(mode, DEFAULT_COUPLING.get(mode))
+        if cpl is not None:
+            config['use_coupling'] = cpl
+            if cpl == 'c2ot' and c2ot_target_ratio is not None:
                 config['c2ot_target_ratio'] = c2ot_target_ratio
 
         # 1. Setup Data

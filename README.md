@@ -7,8 +7,8 @@ Experiments, evaluation, figures and LaTeX source for the TMLR paper
 > [OpenReview](https://openreview.net/forum?id=5cFwygAUFt)
 
 The method itself is the library [structflow](https://github.com/act65/structflow),
-built on [sinterp](https://github.com/act65/sinterp) and
-[flow](https://github.com/act65/flow). This repository pins all three; the tag
+built on [sinterp](https://github.com/act65/sinterp) (packages `sinterp` and `flow`).
+This repository pins both; the tag
 `tmlr-camera-ready` reproduces the published version.
 
 ## Layout

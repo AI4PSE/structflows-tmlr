@@ -97,23 +97,29 @@ colored-mnist-rho1:
 	done
 
 # ---------------------------------------------------------------------- chains
-# Unit-root random-walk chain grid (Section "Price of Parallelism"):
-# train 2 modes x 8 seeds x 5 depths, then the 25-draw solver grid + OOD evals.
+# Unit-root random-walk chain grid (Section "Price of Parallelism"): 3 variants x 5 depths x 8
+# seeds (static/no coupling, dynamic/per-block C2OT, dynamic/independent), the 25-draw solver
+# grid per variant, the population limit of the minibatch coupling, and the figure.
+CHAIN_VARIANTS = static_none:static:static=false dynamic_c2ot:dynamic:dynamic=c2ot \
+                 dynamic_none:dynamic:dynamic=false
 chain-rw:
-	for N in 2 4 8 16 32; do \
-	  $(SWEEP) $(RESULTS)/chain_rw/n$$N --pgm_type chain --mechanism_type linear \
-	    --weight_scale=1.0 --noise_scale=0.2 --root_scale=1.0 \
-	    --n_nodes=$$N --node_dim=1 \
-	    --budget_params=500000 --train_steps=30000 --lr=0.0001 \
-	    --task inference --modes static,dynamic \
-	    --n_pgm_seeds=1 --n_learner_seeds=8 || exit 1; \
+	for V in $(CHAIN_VARIANTS); do \
+	  NAME=$${V%%:*}; R=$${V#*:}; MODE=$${R%%:*}; CPL=$${R#*:}; \
+	  for N in 2 4 8 16 32; do \
+	    $(PY) scripts/sweep.py $(RESULTS)/chain_rw/$$NAME/n$$N --pgm_type chain --mechanism_type linear \
+	      --weight_scale=1.0 --noise_scale=0.2 --root_scale=1.0 \
+	      --n_nodes=$$N --node_dim=1 \
+	      --budget_params=500000 --train_steps=30000 --lr=0.0001 \
+	      --task inference --modes $$MODE --coupling $$CPL \
+	      --c2ot_target_ratio=0.05 --seed_batch=True \
+	      --n_pgm_seeds=1 --n_learner_seeds=8 || exit 1; \
+	    CHAIN_BASE=$(RESULTS)/chain_rw/$$NAME CHAIN_NS=$$N CHAIN_NCOND=25 \
+	      CHAIN_TAG=full25-$$N \
+	      $(PY) scripts/ablations/chain_stiffness_analysis.py || exit 1; \
+	  done; \
 	done
-	for N in 2 4 8 16 32; do \
-	  CHAIN_BASE=$(RESULTS)/chain_rw CHAIN_NS=$$N CHAIN_NCOND=25 \
-	    CHAIN_TAG=full25-$$N \
-	    $(PY) scripts/ablations/chain_stiffness_analysis.py || exit 1; \
-	done
-	CHAIN_BASE=$(RESULTS)/chain_rw $(PY) scripts/ablations/chain_ood_measure.py
+	CHAIN_POP_OUT=$(RESULTS)/chain_rw/population.json $(PY) scripts/ablations/chain_population_check.py
+	CHAIN_RW_BASE=$(RESULTS)/chain_rw $(PY) scripts/plotters/plot_chain_rw.py
 
 # ------------------------------------------------------------------- ablations
 nuts-validation:

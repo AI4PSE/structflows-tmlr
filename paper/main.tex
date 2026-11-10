@@ -1,31 +1,20 @@
 \documentclass{article}
 
-% TMLR style. The default (no option) is the anonymized submission version with
-% line numbers. For the de-anonymized arXiv preprint, use [preprint]; for the
-% camera-ready, use [accepted]. tmlr.sty loads natbib, fontenc, and lmodern.
-% \usepackage{tmlr}            % anonymous submission
-% \usepackage[preprint]{tmlr}   % de-anonymized arXiv preprint
-\usepackage[accepted]{tmlr}     % camera-ready
+\usepackage[accepted]{tmlr}     %
 \def\month{11}
 \def\year{2026}
 \def\openreview{\url{https://openreview.net/forum?id=5cFwygAUFt}}
 
-\usepackage{microtype}        % microtypography
+\usepackage{microtype}        %
 \usepackage{graphicx}
 \usepackage{subcaption}
-\usepackage{booktabs}         % for professional tables
+\usepackage{booktabs}         %
 
-% Math
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{amsthm}
 
-% Algorithms: the classic algorithmic environment (\STATE, \WHILE, ...).
-% float provides the [H] placement specifier used in the appendix.
-% tmlr.sty defines \AND as the author separator, which clashes with the boolean
-% \AND from algorithmic; preserve tmlr's as \tmlrAND (used in the author block)
-% and free \AND for algorithmic.
 \let\tmlrAND\AND
 \let\AND\undefined
 \usepackage{algorithm}
@@ -33,18 +22,11 @@
 \usepackage{float}
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-% hyperref makes hyperlinks in the resulting PDF (load late, after natbib which
-% tmlr.sty already requires).
 \usepackage{hyperref}
 \usepackage[capitalize,noabbrev]{cleveref}
 
-% Figure paths are written as "images/...". The images live in the repository
-% root (one level up), so prepend "../"; "./" is a fallback for local copies.
 \graphicspath{{./}}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% THEOREMS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
@@ -56,32 +38,21 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
-% Revision highlighting for the discussion phase (requested by reviewer vwa6):
-% \rev{...} marks text changed in response to their review. Flip to
-% \markrevfalse for the final, uncolored version -- no other edits needed.
 \usepackage{xcolor}
 \definecolor{revblue}{RGB}{0,60,160}
 \newif\ifmarkrev \markrevtrue
 \newcommand{\rev}[1]{\ifmarkrev{\color{revblue}#1}\else#1\fi}
-% \cam{...} marks camera-ready changes (bug fixes, reruns, scoped claims) for the
-% action editor's diff; \markcamfalse for the final uncolored version.
 \definecolor{camgreen}{RGB}{0,120,60}
 \newif\ifmarkcam \markcamtrue
 \newcommand{\cam}[1]{\ifmarkcam{\color{camgreen}#1}\else#1\fi}
 
-% Todonotes disabled for the preprint build (uncomment the second line to
-% re-enable inline notes during development).
 \usepackage[disable,textsize=tiny]{todonotes}
-%\usepackage[textsize=tiny]{todonotes}
 
-% Capability-table marks.
 \newcommand{\cmark}{\checkmark}
 \newcommand{\xmark}{\ensuremath{\times}}
 
 \title{Structured Flows for Causal Modelling and Statistical Inference}
 
-% Author block is shown only in [preprint]/[accepted] modes; the default
-% submission build anonymizes it automatically.
 \author{%
   \name Alexander Telfar \\
   \addr IAS-9, Forschungszentrum Jülich, Germany \\
@@ -107,13 +78,6 @@ A model of a system can point in the causal direction, following the mechanisms 
 \input{sections/05_future_work}
 \input{sections/06_conclusion}
 
-% % Acknowledgements should only appear in the accepted version.
-% \section*{Acknowledgements}
-
-% \textbf{Do not} include acknowledgements in the initial version of the paper submitted for blind review.
-
-% If a paper is accepted, the final camera-ready version can (and usually should) include acknowledgements.
-
 \section*{Broader Impact Statement}
 
 StructFlow is methodological: it provides tooling for answering causal and probabilistic queries under a user-specified graphical model. The principal risk of such tooling is over-trust: every conclusion inherits the assumptions of Section~\ref{sec:structflow} (a correct, causally sufficient graph), and interventional or counterfactual outputs computed under a mis-specified graph can lend unwarranted causal authority to spurious conclusions in high-stakes settings such as medicine or policy. We state these assumptions explicitly and recommend sensitivity analysis to graph mis-specification before any decision-relevant use. Beyond this, we foresee no risks specific to our method above those common to generative modeling.
@@ -126,11 +90,6 @@ All theoretical claims are accompanied by proofs: Theorem~\ref{thm:marginalizati
 \bibliographystyle{tmlr}
 \bibliography{references}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% APPENDIX
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \appendix
 
