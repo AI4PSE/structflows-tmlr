@@ -9,7 +9,7 @@ description = "Experiments, evaluation and LaTeX source for 'Structured Flows fo
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "Alexander Telfar", email = "te1farac@gmail.com" }]
+authors = [{ name = "Alexander Telfar" }]
 dependencies = [
     "structflow-jax @ git+https://github.com/AI4PSE/structflows@v0.1.0",
     "numpy", "scipy", "pandas", "matplotlib", "tqdm", "networkx", "fire",
