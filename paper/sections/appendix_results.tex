@@ -73,12 +73,12 @@ Is one direction (causal versus inference) better at learning the joint distribu
 
 \subsection{Scaling to $8$-node PGMs}
 
-To check that the framework is not limited to very small graphs, we repeat the inference evaluation on random $8$-node nonlinear PGMs ($5$ PGM seeds $\times$ $5$ learner seeds). Figure~\ref{fig:inference-n8} shows that the qualitative picture is unchanged from $n=4$: all flow-based methods are closely comparable, with the structured (Static) flow tracking the unstructured baselines. This is consistent with our central finding---on well-sampled graphs, structure is a competitive but not dominant choice, and its advantage is most visible under limited data (Section~\ref{sec:sample-efficiency}). The binding constraint on scaling further is \emph{evaluation}, not training: generating MCMC ground truth for every conditional query grows quickly with $n$ (Section~\ref{sec:future_work}).
+To check that the framework is not limited to very small graphs, we repeat the inference evaluation on random $8$-node nonlinear PGMs ($5$ PGM seeds $\times$ $5$ learner seeds). Figure~\ref{fig:inference-n8} shows that the qualitative picture is unchanged from $n=4$\cam{: the unstructured baseline is most accurate ($3.4 \times 10^{-3}$, mean over runs), static conditioning follows closely ($3.9$), and guidance, CAREFL and dynamic conditioning form a second group ($4.8$--$5.0$), the same ordering as on the $4$-node inference queries. Seed-to-seed spread is small ($\leq 0.3 \times 10^{-3}$), so the gaps between the two groups are well resolved.} This is consistent with our central finding---on well-sampled graphs, structure is a competitive but not dominant choice, and its advantage is most visible under limited data (Section~\ref{sec:sample-efficiency}). The binding constraint on scaling further is \emph{evaluation}, not training: generating MCMC ground truth for every conditional query grows quickly with $n$ (Section~\ref{sec:future_work}).
 
 \begin{figure}[hbt!]
     \centering
     \includegraphics[width=0.7\textwidth]{images/experimental_figures/nonlinear8/final_box_swd_pgms_all_task_inference_queries_avg_conditional.png}
-    \caption{\textbf{Inference on $8$-node nonlinear PGMs.} Normalized SWD on posterior queries, aggregated over conditional queries, $5$ PGM seeds and $5$ learner seeds. ``Universal'' denotes an unstructured joint-flow baseline. The structured (Static) flow remains competitive at $n=8$, matching the $n=4$ trend.}
+    \caption{\textbf{Inference on $8$-node nonlinear PGMs.} Normalized SWD on posterior queries, aggregated over conditional queries, $5$ PGM seeds and $5$ learner seeds. ``Universal'' denotes an unstructured joint-flow baseline. The structured (Static) flow remains competitive at $n=8$, matching the $n=4$ trend\cam{; note the $y$-axis does not start at zero}.}
     \label{fig:inference-n8}
 \end{figure}
 
@@ -90,33 +90,6 @@ To check that the framework is not limited to very small graphs, we repeat the i
     \caption{\textbf{MNIST Results.} Sliced Wasserstein Distance across joint, marginal, and conditional distributions for the structure \texttt{labels}$\to$\texttt{images}. Aggregated over 5 seeds.}
     \label{fig:mnist-swd}
 \end{figure*}
-
-\paragraph{Is the elevated dynamic-conditioning SWD an outlier artifact?}
-Appendix~\ref{app:additional-experiments} reports that dynamic conditioning attains the highest conditional SWD on $p(\text{image}\mid\text{label})$ of the flows compared here (roughly $2.5\times$ the static score when aggregated over the $5$ seeds of Figure~\ref{fig:mnist-swd}). We test whether this is driven by a few divergent pixels (which a squared-distance metric would over-weight) or by a genuine, broadly-distributed mismatch. Table~\ref{tab:mnist-outlier} reports, for one representative trained model per method, the SWD recomputed after discarding the largest fraction of the squared sorted-difference terms that make up the SWD, together with the share of the total carried by the top $1\%$ of terms. If outliers dominated, trimming would sharply reduce the score and the top-$1\%$ share would be anomalously high for dynamic conditioning. Neither holds: trimming the top $1\%$ leaves the dynamic-vs-static ratio essentially unchanged ($1.95\times \to 1.95\times$ for the representative run), and dynamic conditioning's top-$1\%$ share ($\sim\!11\%$) is no larger than that of the well-behaved static and guided baselines. The excess SWD is therefore spread across the distribution. Consistent with this, inspecting samples (Figures~\ref{fig:mnist-sample1}--\ref{fig:mnist-sample3}) shows that dynamic conditioning yields perceptually crisp digits that nonetheless sometimes render the wrong class for the conditioning label---a broadly-distributed conditional error, not a heavy tail. The diagnostic script is released with the code.
-
-\begin{table}[h]
-\centering
-\caption{\textbf{Outlier diagnostic for the MNIST conditional SWD} ($p(\text{image}\mid\text{label})$, one representative run per method, corrected sampler, $1000$ conditional samples). ``Trim $x\%$'' recomputes the SWD after dropping the largest $x\%$ of its squared sorted-difference terms; ``top-$1\%$ share'' is the fraction of the total squared mass in those terms. Trimming barely moves any score and dynamic's top-$1\%$ share is typical, so the elevated dynamic SWD is a genuine distributional gap rather than an outlier artifact.}
-\label{tab:mnist-outlier}
-\begin{tabular}{lrrrr}
-\toprule
-\textbf{Method} & \textbf{SWD} & \textbf{Trim 0.1\%} & \textbf{Trim 1\%} & \textbf{Top-1\% share} \\
-\midrule
-Guided    & 0.0118 & 0.0116 & 0.0111 & 11.8\% \\
-Universal & 0.0119 & 0.0117 & 0.0109 & 17.6\% \\
-Static    & 0.0141 & 0.0140 & 0.0134 & 11.3\% \\
-CAREFL    & 0.0273 & 0.0270 & 0.0259 & 11.1\% \\
-Dynamic   & 0.0275 & 0.0273 & 0.0261 & 10.9\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=\textwidth]{images/experimental_figures/mnist/sweep_dynamics_swd_pgms_all_task_all.png}
-    \caption{SWD evaluated on the test set as a function of training step. Aggregated over 5 seeds.}
-    \label{fig:mnist-sweep-dynamics}
-\end{figure}
 
 \begin{figure}[hbt!]
     \centering

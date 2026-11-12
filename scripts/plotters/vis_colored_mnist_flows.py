@@ -25,7 +25,8 @@ import json
 
 # Disable XLA GPU autotuning (same workaround as evaluate_sweep.py): the
 # autotuner fails/produces bad kernels on the large vmapped image-block gemms.
-os.environ['XLA_FLAGS'] = '--xla_gpu_autotune_level=0 --xla_force_host_platform_device_count=1'
+# Triton GEMMs fail on the conv-U-Net contractions ("Too small divisible part of the contracting dimension").
+os.environ['XLA_FLAGS'] = '--xla_gpu_autotune_level=0 --xla_force_host_platform_device_count=1 --xla_gpu_enable_triton_gemm=false'
 
 
 import fire
@@ -180,27 +181,27 @@ def main(causal_results, inference_results, mode='static', learner_seed=0,
     rows = [
         (image_strip(factual['image']), "factual (joint) samples"),
         (image_strip(do_disp),
-         r"$p(\mathrm{image} \mid \mathrm{do}(\mathrm{color}))$, one palette color per column"),
+         r"$p(\mathrm{image} \mid \mathrm{do}(\mathrm{color}))$, one color per column"),
         (image_strip(cond_disp),
-         r"$p(\mathrm{image} \mid \mathrm{color})$, observational (anticausal digit update)"),
+         r"$p(\mathrm{image} \mid \mathrm{color})$, observational"),
     ]
     if cf_strip:
         rows.append((np.concatenate([image_strip(flow_cf['image']),
                                      image_strip(gt_cf['image'])], axis=0),
-                     r"counterfactual $\mathrm{do}(\mathrm{color}')$: flow (top) vs exact re-tint (bottom)"))
+                     r"counterfactual $\mathrm{do}(\mathrm{color}')$: flow (top), exact (bottom)"))
 
     stem = output[:-4] if output.endswith('.png') else output
     # The cf row stacks two strips (56px vs 28px): give it a double-height
     # axis so imshow's equal aspect renders every row at the same width.
     heights = [img.shape[0] // 28 for img, _ in rows]
     fig, axes = plt.subplots(len(rows), 1,
-                             figsize=(8, 1.1 * sum(heights) + 0.3),
+                             figsize=(3.9, 0.52 * sum(heights) + 0.3),  # printed at 0.6\\columnwidth
                              gridspec_kw={'hspace': 0.12, 'height_ratios': heights})
     for ax, (img, title) in zip(np.atleast_1d(axes), rows):
         ax.imshow(img)
-        ax.set_title(title, fontsize=10)
+        ax.set_title(title, fontsize=7.5, pad=2.5)
         ax.axis('off')
-    fig.savefig(f"{stem}_strips.png", dpi=200, bbox_inches='tight')
+    fig.savefig(f"{stem}_strips.png", dpi=300, bbox_inches='tight', pad_inches=0.02)
     print(f"Saved {stem}_strips.png")
 
     x = np.arange(10)
@@ -238,21 +239,28 @@ def main(causal_results, inference_results, mode='static', learner_seed=0,
         pgm._digit_posterior_logits(pal[j], training=False))) for j in range(10)])
 
     panels = [
-        (mats['flow_do'], r"flow: $p(d \mid \mathrm{do}(\mathrm{color}{=}\mathrm{palette}_j))$"),
-        (mats['truth_do'], r"truth: $p(d \mid \mathrm{do}(\mathrm{color}{=}\mathrm{palette}_j))$"),
-        (mats['flow_cond'], r"flow: $p(d \mid \mathrm{color}{=}\mathrm{palette}_j)$"),
-        (truth_cond, r"truth: $p(d \mid \mathrm{color}{=}\mathrm{palette}_j)$"),
+        (mats['flow_do'], r"flow: do(color $j$)"),
+        (mats['truth_do'], r"truth: do(color $j$)"),
+        (mats['flow_cond'], r"flow: given color $j$"),
+        (truth_cond, r"truth: given color $j$"),
     ]
-    fig3, axes3 = plt.subplots(1, 4, figsize=(13, 3.4), sharey=True)
+    # printed at \\textwidth (6.5in): font sizes are the sizes on the page
+    fig3, axes3 = plt.subplots(1, 4, figsize=(6.5, 1.85), sharey=True)
     for ax3, (m, title) in zip(axes3, panels):
         im = ax3.imshow(m, vmin=0.0, vmax=0.85, cmap='viridis')
-        ax3.set_title(title, fontsize=10)
-        ax3.set_xlabel("digit $d$")
+        ax3.set_title(title, fontsize=8, pad=3)
+        ax3.set_xlabel("digit $d$", fontsize=8, labelpad=1)
         ax3.set_xticks(range(10)); ax3.set_yticks(range(10))
-    axes3[0].set_ylabel(r"conditioned color $j$")
-    fig3.colorbar(im, ax=axes3, fraction=0.02, pad=0.01)
-    fig3.savefig(f"{stem}_heatmaps.png", dpi=200, bbox_inches='tight')
+        ax3.tick_params(labelsize=6.5, length=2, pad=1.5)
+    axes3[0].set_ylabel(r"color $j$", fontsize=8, labelpad=1)
+    cb = fig3.colorbar(im, ax=axes3, fraction=0.02, pad=0.01)
+    cb.ax.tick_params(labelsize=6.5)
+    fig3.savefig(f"{stem}_heatmaps.png", dpi=300, bbox_inches='tight', pad_inches=0.02)
     print(f"Saved {stem}_heatmaps.png")
+    # numbers quoted in the text: diagonal (correlated-digit) mass per conditioned color
+    for name, m in [('flow_cond', mats['flow_cond']), ('truth_cond', truth_cond),
+                    ('flow_do', mats['flow_do']), ('truth_do', mats['truth_do'])]:
+        print(f"diag {name}: " + " ".join(f"{v:.2f}" for v in np.diag(m)))
 
 
 if __name__ == "__main__":

@@ -73,7 +73,8 @@ def plot_mnist_samples(results_path: str, output_path: str = "../../images/mnist
     # 5. Sampling Grid
     img_dim = pgm.variable_dims['image']
     
-    fig, axes = plt.subplots(len(dists), 10, figsize=(20, 8))
+    # printed at \textwidth (6.5in): font sizes are the sizes on the page
+    fig, axes = plt.subplots(len(dists), 10, figsize=(6.5, 0.62 * len(dists) + 0.25))
     sample_key = random.PRNGKey(seed)
     
     all_labels = jnp.arange(10)
@@ -102,14 +103,15 @@ def plot_mnist_samples(results_path: str, output_path: str = "../../images/mnist
             img = images[label]
             ax = axes[i, label]
             # ax.imshow(jnp.clip(img, 0, 255), cmap='gray', vmin=0, vmax=255)
-            ax.imshow(img, cmap='gray')
+            # pixels are non-negative: clip solver undershoot so every row shares a black background
+            ax.imshow(jnp.clip(img, 0, None), cmap='gray', vmin=0)
             
             if i == 0:
-                ax.set_title(f"Label {label}")
+                ax.set_title(f"label {label}", fontsize=8, pad=3)
             
             if label == 0:
                 # Keep ylabel visible, hide ticks and spines
-                ax.set_ylabel(f"{c['mode'] if c['mode'] != 'joint' else 'guided'}", rotation=0, labelpad=40, verticalalignment='center')
+                ax.set_ylabel(f"{c['mode'] if c['mode'] != 'joint' else 'guided'}", rotation=0, labelpad=4, ha='right', va='center', fontsize=8)
                 ax.set_xticks([])
                 ax.set_yticks([])
                 for spine in ax.spines.values():
@@ -117,9 +119,9 @@ def plot_mnist_samples(results_path: str, output_path: str = "../../images/mnist
             else:
                 ax.axis('off')
 
-    plt.tight_layout()
+    plt.subplots_adjust(wspace=0.04, hspace=0.06)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    plt.savefig(output_path, bbox_inches='tight')
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.02)
     plt.close()
     print(f"Saved samples plot to {output_path}")
 

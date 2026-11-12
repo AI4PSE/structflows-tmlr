@@ -5,7 +5,7 @@ We provide the implementation details for Inference Alignment of a DAG.
 
 \begin{figure*}[hbt!]
     \centering
-    \includegraphics[width=\textwidth]{images/collider-counterfactual.png}
+    \includegraphics[width=\textwidth]{images/collider-counterfactual.pdf}
     \caption{\textbf{Counterfactual Inference via Flow Inversion.} To answer ``What would $Y$ have been if $X$ had been $x'$?'', we perform three steps. \textbf{(1) Abduction:} Integrate backward from the observation $(x, y)$ to recover the exogenous noise $u = (u_X, u_Y)$. \textbf{(2) Action:} Construct the intervention trajectory $x'_t$ (red path) by integrating backward from $x'$. \textbf{(3) Prediction:} Integrate forward using the original noise $u_Y$ but conditioned on the intervention trajectory $x'_t$. The result $y_{\text{cf}}$ is the counterfactual outcome---what $Y$ would have been for this specific individual under the hypothetical intervention.}
     \label{fig:counterfactual}
 \end{figure*}
@@ -90,14 +90,14 @@ Figures~\ref{fig:example-pgm-compilation-41} and~\ref{fig:example-pgm-compilatio
 
 \begin{figure}[hbt!]
     \centering
-    \includegraphics[width=0.68\columnwidth]{images/pgm_compilation_visualization_41_4.png}
+    \includegraphics[width=0.85\columnwidth]{images/pgm_compilation_visualization_41_4.png}
     \caption{An example of StructFlow ($n=4$, Seed 41). We start with the given structure / DAG (left), which defines the dependencies of the causally-aligned flow. Alternatively, we compile the structure for inference (right), yielding a different DAG that supports inference queries.}
     \label{fig:example-pgm-compilation-41}
 \end{figure}
 
 \begin{figure}[hbt!]
     \centering
-    \includegraphics[width=0.68\columnwidth]{images/pgm_compilation_visualization_41_6.png}
+    \includegraphics[width=0.85\columnwidth]{images/pgm_compilation_visualization_41_6.png}
     \caption{As Figure~\ref{fig:example-pgm-compilation-41}, for a denser graph ($n=6$, Seed 41).}
     \label{fig:example-pgm-compilation-41-6}
 \end{figure}

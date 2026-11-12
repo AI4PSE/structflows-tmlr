@@ -1,6 +1,6 @@
 LATEX = pdflatex -interaction=nonstopmode -halt-on-error
 
-.PHONY: all clean arxiv
+.PHONY: all clean arxiv camera-ready final-revision
 
 all: main.pdf
 
@@ -9,6 +9,21 @@ main.pdf: main.tex sections/*.tex references.bib
 	bibtex main
 	$(LATEX) main
 	$(LATEX) main
+
+# The two camera-ready PDFs: tmlr-camera-ready.pdf (no highlighting) and
+# tmlr-final-revision.pdf (camera-ready changes highlighted in green, for the action editor).
+define build_variant
+	$(LATEX) -jobname=$(1) "\\def\\$(2){}\\input{main}"
+	bibtex $(1)
+	$(LATEX) -jobname=$(1) "\\def\\$(2){}\\input{main}"
+	$(LATEX) -jobname=$(1) "\\def\\$(2){}\\input{main}"
+endef
+
+camera-ready: main.tex sections/*.tex references.bib
+	$(call build_variant,tmlr-camera-ready,camerareadybuild)
+
+final-revision: main.tex sections/*.tex references.bib
+	$(call build_variant,tmlr-final-revision,finalrevisionbuild)
 
 # Build a self-contained tarball for arXiv submission.
 # arXiv compiles from a flat directory, so figures are copied in alongside the
@@ -24,5 +39,5 @@ arxiv: main.pdf
 	@echo "Created arxiv-submission.tar.gz"
 
 clean:
-	rm -f *.aux *.log *.out *.bbl *.blg *.toc main.pdf
+	rm -f *.aux *.log *.out *.bbl *.blg *.toc main.pdf tmlr-camera-ready.pdf tmlr-final-revision.pdf
 	rm -rf arxiv-build arxiv-submission.tar.gz

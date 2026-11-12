@@ -64,12 +64,14 @@ def main(results=f'{RESULTS}',
     lin_cf, nl_cf = without_guided(lin), without_guided(nl)
     out = f'{images}/nonlinear'
     # main text, Figure "pgm-results" (a-c)
-    plot_final_box(nl, out, metric='SWD', task='causal', avg_queries=True, conditional_only=True)
-    plot_final_box(nl_cf, out, metric='Counterfactual_SWD', task='causal', avg_queries=True, conditional_only=True)
-    plot_final_box(nl, out, metric='SWD', task='inference', avg_queries=True, conditional_only=True)
-    # appendix: per-query breakdowns and the joint
-    plot_final_box(nl, out, metric='SWD', task='causal')
-    plot_final_box(nl, out, metric='SWD', task='inference')
+    # (three subfigures of 0.32\textwidth each: printed width 2.08in)
+    main = dict(avg_queries=True, conditional_only=True, width_in=2.08)
+    plot_final_box(nl, out, metric='SWD', task='causal', **main)
+    plot_final_box(nl_cf, out, metric='Counterfactual_SWD', task='causal', **main)
+    plot_final_box(nl, out, metric='SWD', task='inference', **main)
+    # appendix: per-query breakdowns (full text width, 4 panels per row) and the joint
+    plot_final_box(nl, out, metric='SWD', task='causal', n_cols_max=4, panel_aspect=0.8)
+    plot_final_box(nl, out, metric='SWD', task='inference', n_cols_max=4, panel_aspect=0.8)
     plot_joint_task_comparison(nl, out)
     # appendix: linear vs nonlinear
     plot_pgm_type_comparison(lin, nl, images, metric='SWD', task='causal')
@@ -79,7 +81,7 @@ def main(results=f'{RESULTS}',
     if n8:
         n8 = paper_csv(raw8, f'{results}/nonlinear8_kr/paper_results.csv')
         plot_final_box(n8, f'{images}/nonlinear8', metric='SWD', task='inference',
-                       avg_queries=True, conditional_only=True)
+                       avg_queries=True, conditional_only=True, width_in=4.55, panel_aspect=0.5)
 
 
 if __name__ == '__main__':

@@ -27,7 +27,10 @@ def is_conditional_query(query_str: str) -> bool:
     return len(conditions) > 0
 
 
-def plot_final_box(results_path: str = "evaluation_results.csv", output_dir: str = "plots", metric: str = "SWD", max_value: float = 1000.0, pgm_seed: int = None, task: str = None, avg_queries: bool = False, conditional_only: bool = False, showfliers: bool = True, modes=None):
+def plot_final_box(results_path: str = "evaluation_results.csv", output_dir: str = "plots", metric: str = "SWD", max_value: float = 1000.0, pgm_seed: int = None, task: str = None, avg_queries: bool = False, conditional_only: bool = False, showfliers: bool = True, modes=None,
+                   width_in: float = 6.5, n_cols_max: int = 3, panel_aspect: float = 0.9, title: bool = True):
+    """width_in: printed width of the figure in the paper (inches); panels and fonts are sized
+    for it, so the font sizes below are the sizes on the page."""
     if not os.path.exists(results_path):
         print(f"Results file not found: {results_path}")
         return
@@ -112,10 +115,22 @@ def plot_final_box(results_path: str = "evaluation_results.csv", output_dir: str
         return
 
     n_queries = len(target_queries)
-    n_cols = min(3, n_queries)
+    n_cols = min(n_cols_max, n_queries)
     n_rows = (n_queries + n_cols - 1) // n_cols
+    panel_w = width_in / n_cols
+    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8,
+                         'xtick.labelsize': 7, 'ytick.labelsize': 7})
+    ylab = {'SWD': 'SWD', 'Counterfactual_SWD': 'counterfactual SWD'}.get(metric, metric)
 
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5 * n_rows), squeeze=False)
+    # one power-of-ten scale for the whole figure, stated in the y label
+    vmax = max(max(v) for q in data.values() for v in q.values() if v)
+    expo = int(np.floor(np.log10(vmax))) if vmax > 0 else 0
+    if expo != 0:
+        data = {q: {m: [x / 10 ** expo for x in v] for m, v in d.items()} for q, d in data.items()}
+        ylab += f' ($\\times 10^{{{expo}}}$)'
+
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(width_in, panel_w * panel_aspect * n_rows + 0.3),
+                             squeeze=False)
     
     if modes is None:
         all_modes = sorted(list(set(m for q in data for m in data[q])))
@@ -135,10 +150,16 @@ def plot_final_box(results_path: str = "evaluation_results.csv", output_dir: str
                 labels.append(mode)
         
         if plot_data:
-            ax.boxplot(plot_data, tick_labels=labels, showfliers=showfliers)
-            ax.set_title(f"Query: {query} Task: {task}", fontsize=12)
+            ax.boxplot(plot_data, tick_labels=labels, showfliers=showfliers,
+                       flierprops=dict(markersize=3), widths=0.6)
+            if panel_w < 3:
+                ax.tick_params(axis='x', labelrotation=35)
+                for t in ax.get_xticklabels():
+                    t.set_ha('right'); t.set_rotation_mode('anchor')
+            if title and not avg_queries:
+                ax.set_title(query)
             if col_idx == 0:
-                ax.set_ylabel(f"{metric} (Final Step)")
+                ax.set_ylabel(ylab)
             ax.grid(True, axis='y', alpha=0.3)
         else:
             ax.text(0.5, 0.5, "No data", ha='center', va='center')
@@ -157,7 +178,7 @@ def plot_final_box(results_path: str = "evaluation_results.csv", output_dir: str
     output_filename = f"final_box_{metric.lower()}_{pgm_str}_{task_str}_{query_str}{cond_str}.png"
     
     output_path = os.path.join(output_dir, output_filename)
-    plt.savefig(output_path, dpi=300)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.02)
     plt.close()
     print(f"Saved final metric box plot to {output_path}")
 

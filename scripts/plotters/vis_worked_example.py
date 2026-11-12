@@ -78,13 +78,13 @@ def draw_graph(ax, edges, colors, directed=True, removed_edges=(),
     node_colors = [colors.get(n, COL_DEFAULT) for n in G.nodes()]
     nx.draw_networkx_nodes(G, POS, ax=ax, node_color=node_colors,
                            node_size=1800, edgecolors="dimgray")
-    nx.draw_networkx_labels(G, POS, labels=LABELS, ax=ax, font_size=14)
+    nx.draw_networkx_labels(G, POS, labels=LABELS, ax=ax, font_size=15)
     nx.draw_networkx_edges(G, POS, ax=ax, edge_color="gray", width=2,
-                           arrows=directed, arrowsize=20, node_size=1800)
+                           arrows=directed, arrowsize=16, node_size=1800)
     if removed_edges:
         nx.draw_networkx_edges(nx.DiGraph(list(removed_edges)), POS, ax=ax,
                                edge_color="red", style="dashed", width=2,
-                               arrows=True, arrowsize=20, node_size=1800)
+                               arrows=True, arrowsize=16, node_size=1800)
     if order is not None:
         for i, node in enumerate(order):
             x, y = POS[node]
@@ -92,7 +92,7 @@ def draw_graph(ax, edges, colors, directed=True, removed_edges=(),
                     fontweight="bold", color="tab:blue",
                     ha="center", va="center",
                     bbox=dict(boxstyle="circle", fc="white", ec="tab:blue"))
-    ax.set_title(title, fontsize=13)
+    ax.set_title(title, fontsize=15)
     ax.set_xlim(-1.7, 1.7)
     ax.set_ylim(-1.6, 1.6)
     ax.axis("off")
@@ -106,7 +106,7 @@ def main():
     inf_edges = [(p, c) for c, ps in inference.dependencies.items() for p in ps]
     do_edges = [(p, c) for (p, c) in dag_edges if c != "x"]
 
-    fig, axes = plt.subplots(1, 4, figsize=(18, 4.2))
+    fig, axes = plt.subplots(1, 4, figsize=(12, 3.4))  # printed at \textwidth (6.5in): fonts ~8pt on the page
 
     draw_graph(axes[0], dag_edges, {}, directed=True,
                title="(a) Causal DAG $\\mathcal{G}$")

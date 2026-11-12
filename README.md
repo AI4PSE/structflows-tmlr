@@ -6,7 +6,7 @@ Experiments, evaluation, figures and LaTeX source for the TMLR paper
 > and Statistical Inference.* Transactions on Machine Learning Research, 2026.
 > [OpenReview](https://openreview.net/forum?id=5cFwygAUFt)
 
-The method itself is the library [structflow](https://github.com/act65/structflow),
+The method itself is the library [structflows](https://github.com/AI4PSE/structflows),
 built on [sinterp](https://github.com/act65/sinterp) (packages `sinterp` and `flow`).
 This repository pins both; the tag
 `tmlr-camera-ready` reproduces the published version.

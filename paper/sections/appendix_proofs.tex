@@ -115,7 +115,7 @@ Applying the instantaneous change of variables formula to this subsystem yields:
 \begin{equation}
     \log p(\Theta(1) | Y(1)) = \log p_0(\Theta(0)) - \int_0^1 \text{Tr}\left( \frac{\partial v_\Theta}{\partial \Theta}(\Theta(t), Y(t), t) \right) dt
 \end{equation}
-This confirms that the volume change (divergence) of the conditioning variables $Y$ does not need to be computed or integrated, significantly reducing the computational cost for high-dimensional conditioning.
+This confirms that the volume change (divergence) of the conditioning variables $Y$ does not need to be computed or integrated, reducing the computational cost for high-dimensional conditioning.
 \end{proof}
 
 \begin{corollary}[Interventional densities are directly tractable]
@@ -494,7 +494,7 @@ interventional claim, and Theorem~\ref{thm:level3}(b) the counterfactual claim, 
 mechanisms being additive.
 \end{proof}
 
-\begin{remark}[Summary, and the honest split verdict]
+\begin{remark}[Summary: a split verdict]
 \label{rem:hierarchy-summary}
 \emph{Given} the causal graph, a consistently trained causally-aligned StructFlow provably
 reaches Level~2 for arbitrary mechanisms (Theorem~\ref{thm:level2}) and Level~3 for

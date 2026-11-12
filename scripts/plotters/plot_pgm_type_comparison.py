@@ -190,7 +190,9 @@ def plot_pgm_type_comparison(
     
     # Create the plot with box-and-whisker plots
     # Layout: modes across x-axis, pgm_types side-by-side within each mode
-    fig, ax = plt.subplots(figsize=(max(10, 3 * len(modes)), 4))
+    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8,
+                         'xtick.labelsize': 7.5, 'ytick.labelsize': 7, 'legend.fontsize': 7.5})
+    fig, ax = plt.subplots(figsize=(6.5, 2.4))  # printed at \textwidth
     
     # Prepare data for boxplot
     plot_data = []
@@ -206,7 +208,7 @@ def plot_pgm_type_comparison(
             key = (pgm_type, mode)
             if key in data and data[key]:
                 plot_data.append(data[key])
-                labels.append(f"{pgm_type}\n{mode}")
+                labels.append('')
                 colors_list.append(colors.get(pgm_type, 'C0'))
                 x_positions.append(x_pos)
             x_pos += 1
@@ -220,19 +222,19 @@ def plot_pgm_type_comparison(
         patch_artist=True,
         labels=labels,
         showfliers=not hide_outliers,
+        flierprops=dict(markersize=3),
     )
+    # one tick label per mode, centred on its group (colour gives the PGM type)
+    centers = [np.mean([x for x, (pt, m) in zip(x_positions, [(pt, m) for m in modes for pt in pgm_types if (pt, m) in data and data[(pt, m)]]) if m == mode]) for mode in modes]
+    ax.set_xticks(centers)
+    ax.set_xticklabels(modes)
     
     # Color the boxes by pgm_type
     for patch, color in zip(bp['boxes'], colors_list):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
     
-    ax.set_xlabel('Mode')
-    ax.set_ylabel(f'{metric} (Final Step)')
-    title = f'PGM Type Comparison: {metric} (Linear vs Nonlinear)'
-    if task is not None:
-        title += f' - {task.capitalize()} Task'
-    ax.set_title(title)
+    ax.set_ylabel({'SWD': 'SWD', 'Counterfactual_SWD': 'counterfactual SWD'}.get(metric, metric))
     ax.grid(True, axis='y', alpha=0.3)
     
     # Apply y-axis scaling options
@@ -261,7 +263,7 @@ def plot_pgm_type_comparison(
     outliers_str = "_nooutliers" if hide_outliers else ""
     output_filename = f"pgm_type_comparison_{metric.lower()}{task_str}{cond_str}.png"
     output_path = os.path.join(output_dir, output_filename)
-    plt.savefig(output_path, dpi=300)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.02)
     plt.close()
     print(f"Saved PGM type comparison plot to {output_path}")
 

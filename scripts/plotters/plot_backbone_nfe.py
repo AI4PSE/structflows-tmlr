@@ -21,6 +21,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Sized to the printed width (\textwidth = 6.5in): font sizes are the sizes on the page.
+plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8,
+                     'xtick.labelsize': 7, 'ytick.labelsize': 7, 'legend.fontsize': 7.5})
+
 RESULTS = os.environ.get(
     'NFE_RESULTS', f'{RESULTS}/nonlinear4_kr/backbone_nfe.json')
 OUT = f'{IMAGES}/ablations/backbone_nfe.png'
@@ -41,7 +45,7 @@ PANELS = [
 def main():
     rows = json.load(open(RESULTS))
 
-    fig, axes = plt.subplots(1, 3, figsize=(13.5, 3.8))
+    fig, axes = plt.subplots(1, 3, figsize=(6.5, 2.3))
     for ax, (field, ylabel, yscale) in zip(axes, PANELS):
         for backbone, style in STYLES.items():
             nfes = sorted({r['nfe'] for r in rows if r['backbone'] == backbone})
@@ -53,25 +57,25 @@ def main():
                 mean.append(vals.mean())
                 lo.append(vals.min())
                 hi.append(vals.max())
-            ax.plot(nfes, mean, '-', marker=style['marker'], markersize=5,
-                    lw=2, color=style['color'], label=style['label'])
+            ax.plot(nfes, mean, '-', marker=style['marker'], markersize=3,
+                    lw=1.2, color=style['color'], label=style['label'])
             ax.fill_between(nfes, lo, hi, color=style['color'], alpha=0.15, lw=0)
         ax.set_xscale('log', base=2)
         ax.set_yscale(yscale)
         ax.set_xticks(sorted({r['nfe'] for r in rows}))
         ax.set_xticklabels([str(n) for n in sorted({r['nfe'] for r in rows})])
-        ax.set_xlabel('NFE (network calls per sample)')
+        ax.set_xlabel('NFE (network calls / sample)')
         ax.set_ylabel(ylabel)
         ax.grid(True, which='both', alpha=0.25, lw=0.5)
         ax.spines[['top', 'right']].set_visible(False)
-    axes[0].legend(frameon=False, fontsize=9)
-    axes[0].set_title('Interventional (no inversion)', fontsize=10)
-    axes[1].set_title('Counterfactual (needs abduction)', fontsize=10)
-    axes[2].set_title('Noise-reconstruction roundtrip', fontsize=10)
+    axes[0].legend(frameon=False)
+    axes[0].set_title('Interventional (no inversion)')
+    axes[1].set_title('Counterfactual (needs abduction)')
+    axes[2].set_title('Noise-reconstruction roundtrip')
 
     fig.tight_layout()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    fig.savefig(OUT, dpi=200, bbox_inches='tight')
+    fig.savefig(OUT, dpi=300, bbox_inches='tight')
     print(f"saved {OUT}")
 
 

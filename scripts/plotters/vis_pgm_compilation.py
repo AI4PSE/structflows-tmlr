@@ -33,10 +33,10 @@ def plot_structure(ax, structure, title):
     pos = nx.shell_layout(G)
     
     nx.draw(G, pos, ax=ax, with_labels=True, node_color='lavender', 
-            node_size=2000, arrowsize=20, font_size=14, font_weight='bold',
-            edge_color='gray', width=2)
+            node_size=1100, arrowsize=14, font_size=12, font_weight='bold',
+            edge_color='gray', width=1.5)
     
-    ax.set_title(title, fontsize=16, pad=20)
+    ax.set_title(title, fontsize=13, pad=10)
 
 def main(seed=42, n_nodes=6, sparsity=0.4):
     # 1. Initialize random PGM
@@ -69,7 +69,7 @@ def main(seed=42, n_nodes=6, sparsity=0.4):
 
     
     # 3. Plotting
-    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
+    fig, axes = plt.subplots(1, 2, figsize=(8, 3.6))  # printed at 0.85\columnwidth (5.5in): fonts ~8pt on the page
     
     # plot_structure(axes[0], pgm_structure, "Original PGM DAG")
     plot_structure(axes[0], causal_deps, "Causal DAG")
@@ -80,7 +80,7 @@ def main(seed=42, n_nodes=6, sparsity=0.4):
     
     plt.tight_layout()
     output_path = f"pgm_compilation_visualization_{seed}_{n_nodes}.png"
-    plt.savefig(output_path, dpi=300)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
     print(f"Visualization saved to {output_path}")
 
 if __name__ == "__main__":

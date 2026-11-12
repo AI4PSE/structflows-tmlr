@@ -129,7 +129,9 @@ def plot_joint_task_comparison(results_path: str = "evaluation_results.csv", out
     n_modes = len(modes)
     n_tasks = len(tasks)
     
-    fig, ax = plt.subplots(figsize=(max(8, 3 * n_modes), 6))
+    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8,
+                         'xtick.labelsize': 7.5, 'ytick.labelsize': 7, 'legend.fontsize': 7.5})
+    fig, ax = plt.subplots(figsize=(5.2, 2.4))  # printed at 0.8\textwidth
     
     # Prepare data for boxplot
     plot_data = []
@@ -145,7 +147,7 @@ def plot_joint_task_comparison(results_path: str = "evaluation_results.csv", out
             key = (mode, task)
             if key in data and data[key]:
                 plot_data.append(data[key])
-                labels.append(f"{mode}\n{task}")
+                labels.append('')
                 colors_list.append(colors.get(task, f'C0'))
                 x_positions.append(x_pos)
             x_pos += 1
@@ -154,22 +156,26 @@ def plot_joint_task_comparison(results_path: str = "evaluation_results.csv", out
     # Create box plot
     bp = ax.boxplot(plot_data, positions=x_positions, widths=0.6, patch_artist=True,
                     labels=labels, showfliers=False)
+    keys = [(m, t) for m in modes for t in tasks if (m, t) in data and data[(m, t)]]
+    ax.set_xticks([np.mean([x for x, k in zip(x_positions, keys) if k[0] == m]) for m in modes])
+    ax.set_xticklabels(modes)
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(facecolor=colors[t], alpha=0.7, label=t) for t in tasks if t in colors],
+              loc='upper right')
     
     # Color the boxes by task
     for patch, color in zip(bp['boxes'], colors_list):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
     
-    ax.set_xlabel('Mode / Task')
-    ax.set_ylabel(f'{metric} (Final Step)')
-    ax.set_title(f'Joint Distribution SWD (Causal vs Inference)')
+    ax.set_ylabel('joint SWD')
     ax.grid(True, axis='y', alpha=0.3)
     
     plt.tight_layout()
     
     output_filename = f"task_comparison_{metric.lower()}_joint.png"
     output_path = os.path.join(output_dir, output_filename)
-    plt.savefig(output_path, dpi=300)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.02)
     plt.close()
     print(f"Saved task comparison plot to {output_path}")
 

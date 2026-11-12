@@ -5,7 +5,7 @@ This section develops StructFlow bottom-up: flow-matching primitives, then block
 
 \begin{figure*}[hbt!]
     \centering
-    \includegraphics[width=0.62\textwidth]{images/collider-pgm-dual.png}
+    \includegraphics[width=\textwidth]{images/collider-pgm-dual.pdf}
     \caption{\textbf{The StructFlow Pipeline.} Given a causal graph (top left) and an inference query $p(x_1 \mid x_2, x_0)$, StructFlow transforms the graph into a valid flow architecture. 1. The graph is \textbf{moralized} (adding the blue edge between $x_1$ and $x_2$) to account for the "explaining away" effect. 2. The flow is ordered such that the condition $x_0$ is integrated first, ensuring the correct dependencies are used as conditions in each variable's flow.}
     \label{fig:dual-flow}
 \end{figure*}

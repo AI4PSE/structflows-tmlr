@@ -6,7 +6,7 @@ In this section, we provide the detailed algorithms for sampling and inference u
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{images/collider-pgm-structured.png}
+    \includegraphics[width=0.72\textwidth]{images/collider-pgm-structured.pdf}
     \caption{\textbf{Static vs.\ Dynamic Conditioning.} Sampling $p(x_0 \mid x_1, x_2)$ with a block-triangular flow ordered $[x_1, x_2, x_0]$ (e.g.\ compiled from the collider $X_1 \to X_0 \leftarrow X_2$). Static conditioning (green) first integrates the conditioning blocks to completion and provides their final values $x_1^{(t=1)}, x_2^{(t=1)}$ as fixed inputs to the velocity field of $x_0$. Dynamic conditioning (red) integrates all blocks jointly in a single ODE solve, with $x_0$'s velocity conditioned on the evolving trajectories $x_1^{(t)}, x_2^{(t)}$ at each time step.}
     \label{fig:static-v-dynamic-conditioning}
 \end{figure}

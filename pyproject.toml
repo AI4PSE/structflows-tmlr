@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Alexander Telfar", email = "te1farac@gmail.com" }]
 dependencies = [
-    "structflow-jax @ git+https://github.com/act65/structflow@v0.1.0",
+    "structflow-jax @ git+https://github.com/AI4PSE/structflows@v0.1.0",
     "numpy", "scipy", "pandas", "matplotlib", "tqdm", "networkx", "fire",
     "jax", "equinox", "optax", "blackjax",
 ]
@@ -20,7 +20,7 @@ dependencies = [
 dev = ["pytest"]
 
 [project.urls]
-Homepage = "https://github.com/act65/structflow-tmlr"
+Homepage = "https://github.com/AI4PSE/structflows-tmlr"
 Paper = "https://openreview.net/forum?id=5cFwygAUFt"
 
 [tool.setuptools]
