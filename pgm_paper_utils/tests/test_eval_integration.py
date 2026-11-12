@@ -106,7 +106,7 @@ class GaussianPGM:
 # Exact velocity network for dynamic mode
 # ============================================================================
 #
-# 'dynamic' now builds a DynamicV2Distribution via
+# 'dynamic' now builds a DynamicDistribution via
 # ParallelFieldAdapter(model): it needs model.net to look like a
 # ParallelStructuredFn (structure, block_offsets, output_dim, time_embed,
 # hidden_block_dims, layers), because log_prob / counterfactual call
@@ -158,7 +158,7 @@ class ExactParallelNet(eqx.Module):
     block_offsets: dict = eqx.field(static=True)
 
     def __init__(self, structure, v_fns):
-        from structflow.conditional_flows.parallel.layers import DenseMaskedLinear
+        from structflow.conditional_flows.dynamic.layers import DenseMaskedLinear
         order = structure.block_order
         dims = {b: structure.dims[b] for b in order}
         d = dims[order[0]]
@@ -378,7 +378,7 @@ def test_eval_metrics(request, independent_pgm_setup, models, mode, task, query_
 
 # Regression guard (fixed 2026-10-26): test_eval_dynamic_production_field_exact_model.
 DYNAMIC_LOG_PROB_BUG = (
-    "Fixed library bug (conditional_flows/dynamicv2/dist.py DynamicV2Distribution.log_prob, "
+    "Fixed library bug (conditional_flows/dynamic/dist.py DynamicDistribution.log_prob, "
     "also .counterfactual): the divergence is taken of clip_tail(velocity_fn) = the RAW "
     "ParallelStructuredFn (the eta1 denoiser), not of the field velocity "
     "get_velocity_b that the backward trajectory integrates. Exact model: joint "

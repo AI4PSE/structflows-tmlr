@@ -1,7 +1,7 @@
 import jax
 import jax.numpy as jnp
 import time
-from structflow.conditional_flows.parallel.layers import DenseMaskedLinear, SparseMaskedLinear
+from structflow.conditional_flows.dynamic.layers import DenseMaskedLinear, SparseMaskedLinear
 
 def benchmark_layers(in_features=1000, out_features=1000, sparsity=0.1):
     key = jax.random.PRNGKey(0)

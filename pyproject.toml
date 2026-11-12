@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Alexander Telfar" }]
 dependencies = [
-    "structflow-jax @ git+https://github.com/AI4PSE/structflows@v0.1.1",
+    "structflow-jax @ git+https://github.com/AI4PSE/structflows@v0.1.2",
     "numpy", "scipy", "pandas", "matplotlib", "tqdm", "networkx", "fire",
     "jax", "equinox", "optax", "blackjax",
 ]

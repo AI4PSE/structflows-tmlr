@@ -8,7 +8,7 @@ def count_total_params(model):
     """Counts actual trainable parameters for a given model."""
 
     # Custom count to handle masked layers, non-trainable components, and avoid double-counting
-    from structflow.conditional_flows.parallel.layers import DenseMaskedLinear, SparseMaskedLinear
+    from structflow.conditional_flows.dynamic.layers import DenseMaskedLinear, SparseMaskedLinear
     from flow.net import FourierFeatures
 
     class SpecialCount:

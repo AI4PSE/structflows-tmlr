@@ -5,7 +5,7 @@ import equinox as eqx
 import pytest
 from pgm_paper_utils.learner_factory import create_learner
 from pgm_paper_utils.dist_factory import create_distribution
-from structflow.conditional_flows.dynamicv2.dist import DynamicV2Distribution
+from structflow.conditional_flows.dynamic.dist import DynamicDistribution
 from structflow.conditional_flows.dist import NormalisedDistribution
 
 def test_parallel_mode_integration():
@@ -49,10 +49,10 @@ def test_parallel_mode_integration():
     # 4. Create Distribution
     dist = create_distribution(config, model, normaliser)
     
-    # 'dynamic' (formerly 'parallel') now builds a DynamicV2Distribution
-    # (dist_factory maps 'dynamic' -> create_dynamicv2_distribution).
+    # 'dynamic' (formerly 'parallel') now builds a DynamicDistribution
+    # (dist_factory maps 'dynamic' -> create_dynamic_distribution).
     assert isinstance(dist, NormalisedDistribution)
-    assert isinstance(dist.dist, DynamicV2Distribution)
+    assert isinstance(dist.dist, DynamicDistribution)
     
     # 5. Verify Sampling
     sample_key = jax.random.PRNGKey(1)
