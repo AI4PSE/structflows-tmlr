@@ -1,0 +1,110 @@
+\documentclass{article}
+
+\usepackage[accepted]{tmlr}     %
+\def\month{11}
+\def\year{2026}
+\def\openreview{\url{https://openreview.net/forum?id=5cFwygAUFt}}
+
+\usepackage{microtype}        %
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}         %
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\let\tmlrAND\AND
+\let\AND\undefined
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{float}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\graphicspath{{./}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\usepackage{xcolor}
+\definecolor{revblue}{RGB}{0,60,160}
+\newif\ifmarkrev \markrevtrue
+\newcommand{\rev}[1]{\ifmarkrev{\color{revblue}#1}\else#1\fi}
+\definecolor{camgreen}{RGB}{0,120,60}
+\newif\ifmarkcam \markcamtrue
+\newcommand{\cam}[1]{\ifmarkcam{\color{camgreen}#1}\else#1\fi}
+\ifdefined\camerareadybuild \markrevfalse \markcamfalse \fi
+\ifdefined\finalrevisionbuild \markrevfalse \markcamtrue \fi
+
+\usepackage[disable,textsize=tiny]{todonotes}
+
+\newcommand{\cmark}{\checkmark}
+\newcommand{\xmark}{\ensuremath{\times}}
+
+\title{\texorpdfstring{Structured Flows for Causal Modelling\\ and Statistical Inference}{Structured Flows for Causal Modelling and Statistical Inference}}
+\hypersetup{pdftitle={Structured Flows for Causal Modelling and Statistical Inference}}
+
+\author{%
+  \name Alexander Telfar \\
+  \addr IAS-9, Forschungszentrum Jülich, Germany \\
+  \email a.telfar@fz-juelich.de
+  \tmlrAND
+  \name Stefan Sandfeld \\
+  \addr IAS-9, Forschungszentrum Jülich, Germany \\
+  \email s.sandfeld@fz-juelich.de
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A model of a system can point in the causal direction, following the mechanisms that generate the data, or in the inference direction, mapping observations back to the latent quantities that explain them. The two directions make conflicting architectural demands: interventional and counterfactual queries require the generative factorization, while efficient posterior inference needs the observations first, plus the extra correlations conditioning induces between causes (``explaining away''). Probabilistic Graphical Models (PGMs) specify the relevant structure once, yet continuous normalizing flows (CNFs) are typically blind to it. We present \textbf{StructFlow}, a compiler that turns a PGM and a query into a block-triangular CNF aligned to the task: a \emph{causal-alignment} model preserving the directed acyclic graph (DAG) factorization for interventional and counterfactual queries, or an \emph{inference-alignment} model, re-ordered and moralized for amortized posterior inference. We prove that constraining the connectivity of the velocity field suffices to make the learned transport respect the graph, and characterize which queries each compilation answers tractably. Conditions can enter each block's flow either \emph{statically}---integrated to completion, then fixed---or \emph{dynamically}---co-evolving with the targets in a single parallel ODE solve; we extend the latter, previously limited to a single observations-to-targets split, to arbitrary DAGs. Empirically, we confirm the expected benefits of structure (\rev{collider posteriors require the posterior dependencies the compiler adds}, sparsity helps when data are scarce, and amortized queries run roughly an order of magnitude faster than per-query Markov chain Monte Carlo), then characterize a less expected failure: dynamic conditioning's parallel sampling degrades on deep dependency chains with informative evidence. On a confounded Colored-MNIST benchmark, the same graph compiles into models that answer interventional and observational queries with visibly different---and correct---results. \cam{All evaluations use problems with exact or reference ground truth---demonstrating the framework on high-dimensional, real-world systems, where the graph must be estimated and hidden confounding is likely, remains future work.}
+\end{abstract}
+
+\input{sections/01_intro}
+\input{sections/02_related}
+\input{sections/03_methods}
+\input{sections/04_experiments_discussion}
+\input{sections/05_future_work}
+\input{sections/06_conclusion}
+
+\section*{Broader Impact Statement}
+
+StructFlow is methodological: it provides tooling for answering causal and probabilistic queries under a user-specified graphical model. The principal risk of such tooling is over-trust: every conclusion inherits the assumptions of Section~\ref{sec:structflow} (a correct, causally sufficient graph), and interventional or counterfactual outputs computed under a mis-specified graph can lend unwarranted causal authority to spurious conclusions in high-stakes settings such as medicine or policy. We state these assumptions explicitly and recommend sensitivity analysis to graph mis-specification before any decision-relevant use. Beyond this, we foresee no risks specific to our method above those common to generative modeling.
+
+\section*{Reproducibility Statement}
+
+All theoretical claims are accompanied by proofs: Theorem~\ref{thm:marginalization} and Propositions~1--3 are proved in Appendix~\ref{app:proof}, and the compilation procedure is given as explicit algorithms in Appendix~\ref{app:algorithms}. The PGM-to-flow compiler, the static/dynamic/guided conditioning mechanisms, and all benchmarks are implemented in a single open-source library\cam{, \url{https://github.com/AI4PSE/structflows}; the paper repository \url{https://github.com/AI4PSE/structflows-tmlr} (tag \texttt{tmlr-camera-ready}) reproduces every result in this paper from Makefile targets}. Each analysis experiment is reproduced by a self-contained script with fixed seeds---the moralization ablation (Section~\ref{sec:moralization-ablation}), the sample-efficiency sweep (Section~\ref{sec:sample-efficiency}), and the amortization comparison (Section~\ref{sec:amortization}). The synthetic PGM benchmarks (Section~\ref{sec:experiments}) are generated from fixed seeds, and the exact architectures, optimizer settings, and parameter-budgeting procedure are documented in Appendix~\ref{app:implementation}. Ground-truth posteriors are computed in closed form where available (linear-Gaussian models) and via the No-U-Turn Sampler otherwise; the NUTS references are validated by closed-form anchors, warmup-sensitivity checks, and simulation-based calibration (Appendix~\ref{app:nuts-validation}).
+
+\newpage
+\providecommand{\doi}[1]{\href{https://doi.org/#1}{doi:~\nolinkurl{#1}}}
+\bibliographystyle{tmlr}
+\bibliography{references}
+
+\newpage
+\appendix
+
+\section*{Appendix}
+
+\input{sections/appendix_compiler}
+\input{sections/appendix_implementation}
+\input{sections/appendix_algorithms}
+\input{sections/appendix_proofs}
+\input{sections/appendix_experiments}
+\input{sections/appendix_additional}
+\input{sections/appendix_results}
+
+\end{document}

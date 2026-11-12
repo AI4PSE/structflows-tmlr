@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "structflow-tmlr"
+version = "1.0.0"
+description = "Experiments, evaluation and LaTeX source for 'Structured Flows for Causal Modelling and Statistical Inference' (TMLR 2026)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Alexander Telfar" }]
+dependencies = [
+    "structflow-jax @ git+https://github.com/AI4PSE/structflows@v0.1.1",
+    "numpy", "scipy", "pandas", "matplotlib", "tqdm", "networkx", "fire",
+    "jax", "equinox", "optax", "blackjax",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/AI4PSE/structflows-tmlr"
+Paper = "https://openreview.net/forum?id=5cFwygAUFt"
+
+[tool.setuptools]
+packages = ["pgm_paper_utils"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "expensive: marks tests as expensive (run with '--run-expensive')",
+]
