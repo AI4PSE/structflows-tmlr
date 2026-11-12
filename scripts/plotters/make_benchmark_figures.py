@@ -1,9 +1,8 @@
-"""Regenerate the 4-node (and 8-node) benchmark figures of the paper from the evaluation CSVs.
+"""Draw the 4-node (and 8-node) benchmark figures of the paper from the evaluation CSVs.
 
-Each results/<bench>_kr/evaluation_results.csv holds every evaluated run of a benchmark: the
-re-run models trained with the corrected couplings and the published grid re-evaluated with the
-same code. The paper reports one variant per mode, the coupling under which that mode is
-consistent (Appendix "Noise--Data Coupling"):
+Each results/<bench>_kr/evaluation_results.csv holds every evaluated run of a benchmark, which
+may include runs trained with several couplings. The paper reports one variant per mode, the
+coupling under which that mode is consistent (Appendix "Noise--Data Coupling"):
 
     static: no coupling    dynamic: per-block C2OT    guided: Hungarian    carefl, universal: as-is
 
@@ -29,7 +28,7 @@ PAPER_COUPLING = {'static': 'none', 'dynamic': 'c2ot', 'guided': 'hungarian'}
 
 
 def coupling_of(df):
-    """'none' / 'joint' (the pre-fix default: use_coupling unset or True) / 'c2ot' / 'hungarian'."""
+    """'none' / 'joint' (use_coupling unset or True: OT on the full joint vector) / 'c2ot' / 'hungarian'."""
     uc = df['use_coupling'] if 'use_coupling' in df else pd.Series(np.nan, index=df.index)
     uc = uc.astype(object).where(uc.notna(), 'joint')
     return uc.map(lambda v: {'False': 'none', False: 'none', 'True': 'joint', True: 'joint'}.get(v, v))

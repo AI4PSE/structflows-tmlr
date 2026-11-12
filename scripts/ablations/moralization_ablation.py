@@ -18,6 +18,7 @@ Both are trained identically on the same joint samples. We report the recovered
 posterior correlation / means against the analytic ground truth.
 """
 
+from pgm_paper_utils.paths import IMAGES
 import os
 import argparse
 import numpy as np
@@ -130,7 +131,7 @@ def main():
     ap.add_argument("--batch", type=int, default=512)
     ap.add_argument("--c", type=float, default=1.5)
     ap.add_argument("--out", type=str,
-                    default="../../images/ablations/moralization_collider.png")
+                    default=os.path.join(IMAGES, "ablations", "moralization_collider.png"))
     args = ap.parse_args()
 
     dims = {"A": 1, "B": 1, "C": 1}

@@ -12,7 +12,7 @@ measured NFE (network calls per sample, log2 axis):
 
 One line per backbone: mean over pgm_seeds, with a min-max band across seeds.
 
-Run:  ~/my_jax_env/bin/python scripts/plotters/plot_backbone_nfe.py
+Run:  python scripts/plotters/plot_backbone_nfe.py
 """
 from pgm_paper_utils.paths import RESULTS, IMAGES
 import json

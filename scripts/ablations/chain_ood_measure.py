@@ -7,7 +7,7 @@ For each dynamic run in $CHAIN_BASE/n{N}:
       (post-fix dist.sample path) — late-t velocity growth with block depth
       is the stiffness signature.
 
-Run: CHAIN_BASE=.../chain_stiffness_strong ~/my_jax_env/bin/python \
+Run: CHAIN_BASE=.../chain_stiffness_strong python \
      scripts/ablations/chain_ood_measure.py
 """
 from pgm_paper_utils.paths import RESULTS

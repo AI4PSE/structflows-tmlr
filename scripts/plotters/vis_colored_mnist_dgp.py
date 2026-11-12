@@ -10,7 +10,7 @@ Checks:
      digit marginal flat, p(image | color) concentrates it (back-door via digit).
 
 Run from the repository root:
-    ~/my_jax_env/bin/python scripts/plotters/vis_colored_mnist_dgp.py
+    python scripts/plotters/vis_colored_mnist_dgp.py
 """
 from pgm_paper_utils.paths import IMAGES
 import os

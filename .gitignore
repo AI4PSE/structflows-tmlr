@@ -12,3 +12,5 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/main.pdf
 .nfs*
+paper/tmlr-*.pdf
+paper/*.toc

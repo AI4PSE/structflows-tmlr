@@ -6,7 +6,7 @@ P2/P3: W2 vs RK4 steps per depth (static converges / dynamic anti-converges).
 P4: conditional/joint max-|v| amplification vs depth: dynamic clamp block
     grows, integrated blocks (both modes) stay flat. 8-seed mean +/- std.
 
-Run: ~/my_jax_env/bin/python scripts/plotters/plot_chain_stiffness.py
+Run: python scripts/plotters/plot_chain_stiffness.py
 """
 from pgm_paper_utils.paths import RESULTS, IMAGES
 import json, glob, collections

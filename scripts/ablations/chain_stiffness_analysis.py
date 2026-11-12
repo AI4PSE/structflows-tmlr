@@ -10,7 +10,7 @@ because the conditioning signal resolves late in t; static stays flat.
 
 Outputs results JSON + summary plots.
 
-Run:  ~/my_jax_env/bin/python scripts/ablations/chain_stiffness_analysis.py
+Run:  python scripts/ablations/chain_stiffness_analysis.py
 """
 from pgm_paper_utils.paths import RESULTS
 import os, sys, json, glob

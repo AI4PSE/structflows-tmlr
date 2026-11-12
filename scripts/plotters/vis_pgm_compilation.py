@@ -76,7 +76,7 @@ def main(seed=42, n_nodes=6, sparsity=0.4):
     
     target_str = ", ".join(sorted(list(targets)))
     cond_str = ", ".join(sorted(list(conditions)))
-    plot_structure(axes[1], inference_deps, f"Compiled Inference DAG\n$p({{{target_str}}} \mid {{{cond_str}}})$")
+    plot_structure(axes[1], inference_deps, "Compiled Inference DAG\n" + rf"$p({{{target_str}}} \mid {{{cond_str}}})$")
     
     plt.tight_layout()
     output_path = f"pgm_compilation_visualization_{seed}_{n_nodes}.png"

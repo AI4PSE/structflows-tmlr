@@ -1,3 +1,4 @@
+from pgm_paper_utils.paths import IMAGES
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -114,7 +115,7 @@ def plot_synthetic_hists(results_dir: str, pgm_type: str = "random", n_vars: int
         
     plt.tight_layout()
     if output_path is None:
-        output_path = f"../../images/synthetic_{pgm_type}_hists.png"
+        output_path = os.path.join(IMAGES, f"synthetic_{pgm_type}_hists.png")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.savefig(output_path, dpi=200)

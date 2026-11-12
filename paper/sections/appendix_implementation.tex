@@ -19,7 +19,7 @@ where $y_t = t y_1 + (1-t) \epsilon$ is the linear interpolant.
 \cam{Minibatch optimal transport (OT) couplings, which pair noise samples $\epsilon$ with data samples $y_1$ within each training batch, straighten flow trajectories \citep{tong2023conditional} and so reduce integration error. They preserve the \emph{joint} marginals, but a coupling computed on the full vector $y_1$ is not neutral for \emph{conditionals}: the noise paired with a block then depends on that block's conditions, so the population optimum of the flow-matching loss no longer transports to the correct conditional distributions \citep{cheng2025curse}. Which coupling is admissible therefore depends on the conditioning mode:
 \begin{itemize}
     \item \textbf{Static:} independent pairing ($\epsilon \perp y_1$). Each block's network receives its conditions as clean inputs, and independent pairing is exact for every conditional.
-    \item \textbf{Dynamic:} a per-block coupling in topological order. Each block's noise is matched to its data within the batch by a condition-aware OT plan \citep{cheng2025curse} whose cost includes the block's parents (target ratio $0.05$), i.e.\ a minibatch Knothe--Rosenblatt coupling. Unlike independent pairing, this makes the marginal velocity of each block depend only on the block and its predecessors, which a block-triangular field can represent (Remark~\ref{rem:dynamic-consistency}).
+    \item \textbf{Dynamic:} a per-block coupling in topological order. Each block's noise is matched to its data within the batch by a condition-aware OT plan \citep{cheng2025curse} whose cost adds the parents' squared distance with a weight chosen per batch by the adaptive rule of \citet{cheng2025curse}: the smallest weight for which at most $5\%$ of pairs $(i,j)$ have a combined cost below that of the unpermuted pair $(i,i)$. This is a minibatch Knothe--Rosenblatt coupling. Unlike independent pairing, this makes the marginal velocity of each block depend only on the block and its predecessors, which a block-triangular field can represent (Remark~\ref{rem:dynamic-consistency}).
     \item \textbf{Guided:} exact minibatch OT (Hungarian) on the joint vector; the guided flow models the joint, which this coupling preserves.
 \end{itemize}
 
@@ -27,7 +27,7 @@ where $y_t = t y_1 + (1-t) \epsilon$ is the linear interpolant.
 
 \subsection{Neural Network Architecture}
 
-For each variable in the PGM, we use a conditional block which computes the output (velocity or eta1 prediction) of that variable given its current state $y_t$, the diffusion time $t$, and the values of its parent variables $\{p_i\}$ in the dependency graph.
+For each variable in the PGM, we use a conditional block which computes the output (the velocity, or the prediction $\hat\eta_1$ of the clean data) of that variable given its current state $y_t$, the time $t$, and the values of its parent variables $\{p_i\}$ in the dependency graph.
 
 \subsubsection{Residual Block Architecture}
 Across all our conditional blocks and networks, we employ a consistent architecture based on residual layers. The key design is:
@@ -43,11 +43,11 @@ To further ensure comparability of the varying architectures (e.g., a single lar
 
 \subsection{Structured Flows}
 
-We verify that our models have the intended structure. And example is shown in \ref{fig:extraction-visualization}.
+We verify that our models have the intended structure; an example is shown in Figure~\ref{fig:extraction-visualization}.
 
 \begin{figure}[hbt!]
     \centering
     \includegraphics[width=\columnwidth]{images/pgm_compilation_and_extraction_visualization_42.png}
-    \caption{Given a PGM, we extract the DAG. This DAG is either; used as the structure of a causal flow architecture, or transformed into an inference aligned DAG and used to construct a inference capable flow architecture.}
+    \caption{Given a PGM, we extract its DAG. The DAG is either used directly as the structure of a causal flow, or compiled into an inference-aligned DAG from which an inference flow is built.}
     \label{fig:extraction-visualization}
 \end{figure}

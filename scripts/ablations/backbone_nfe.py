@@ -13,8 +13,7 @@ NFE in {4, 8, 16, 32, 64, 128}, computes:
       distribution so both backbones are compared in the same space and the
       normaliser roundtrip cannot confound the measurement.
 
-CRITICAL NFE accounting (see notes/backbone-ablation-plan.md, fairness
-controls): the x-axis is measured NETWORK CALLS per sample, not solver steps.
+CRITICAL NFE accounting (fairness control): the x-axis is measured NETWORK CALLS per sample, not solver steps.
 The static backbone uses fixed-step RK4 (4 evals/step) -> n_steps = NFE // 4;
 the DCM backbone uses DDIM (1 eval/step) -> n_steps = NFE. The recorded 'nfe'
 field is the ACTUAL call count: 4 * n_steps (static) or n_steps (dcm).
@@ -26,7 +25,7 @@ point, first-order bias) — that bias is the object of study; do not "fix" it.
 Output: results/nonlinear4_kr/backbone_nfe.json (static from nonlinear4_kr, uncoupled; DCM from nonlinear4)
 Plot:   scripts/plotters/plot_backbone_nfe.py
 
-Run:  ~/my_jax_env/bin/python scripts/ablations/backbone_nfe.py
+Run:  python scripts/ablations/backbone_nfe.py
 """
 from pgm_paper_utils.paths import RESULTS
 import os

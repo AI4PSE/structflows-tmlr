@@ -22,8 +22,8 @@ from structflow.pgms.utilities import format_dist_str
 def _make_chunk_runner(pgm, step_fn, model, normaliser, batch_size, length):
     """jit(lax.scan) over `length` fused (sample -> step) iterations.
 
-    Uses exactly the same key-splitting as the original per-step loop, so the
-    RNG stream (data, noise, time, coupling keys) is unchanged; only XLA fusion
+    Uses the same key-splitting as the per-step loop (`_train_run_per_step`), so the
+    RNG stream (data, noise, time, coupling keys) is the same; only XLA fusion
     differs, giving float32-rounding-level differences in the losses.
     """
     m_static = eqx.partition(model, eqx.is_array)[1]
@@ -50,9 +50,9 @@ def train_run(config, save_dir, pgm, structure, n_checkpoints=3, steps_per_call=
 
     steps_per_call (default from $SWEEP_STEPS_PER_CALL, else 100) fuses that
     many sample+step iterations into one jitted lax.scan call and keeps the
-    losses on device.  It is deliberately NOT a config key, so run names /
-    config hashes are unchanged.  steps_per_call=0 runs the original
-    per-step loop.  Checkpoint steps and file names are identical to before.
+    losses on device.  It is deliberately NOT a config key, so it does not change
+    run names or config hashes.  steps_per_call=0 runs the per-step loop; both
+    write the same checkpoint steps and file names.
     """
     if steps_per_call is None:
         steps_per_call = int(os.environ.get('SWEEP_STEPS_PER_CALL', 100))
@@ -66,7 +66,7 @@ def train_run(config, save_dir, pgm, structure, n_checkpoints=3, steps_per_call=
     opt_state = optimizer.init(eqx.filter(model, eqx.is_array))
 
     T = config['train_steps']
-    # Iteration indices i (0..T) after which the original loop saved a file.
+    # Iteration indices i (0..T) after which the per-step loop saves a file.
     ends = []
     if n_checkpoints is not None:
         ends = [i for i in range(T + 1) if i % (T // n_checkpoints) == 0 and i != T]

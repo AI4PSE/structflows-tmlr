@@ -1,3 +1,4 @@
+from pgm_paper_utils.paths import IMAGES, RESULTS
 import json
 import os
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ import fire
 from collections import defaultdict
 import re
 
-def plot_chain_scaling(results_path: str = "../../results/scaling/evaluation_results.json", output_dir: str = "../../images", metric: str = "KL"):
+def plot_chain_scaling(results_path: str = os.path.join(RESULTS, "scaling", "evaluation_results.json"), output_dir: str = IMAGES, metric: str = "KL"):
     if not os.path.exists(results_path):
         print(f"Results file not found: {results_path}")
         return

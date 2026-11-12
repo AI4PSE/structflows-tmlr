@@ -1,10 +1,11 @@
+from pgm_paper_utils.paths import IMAGES
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 import fire
 
-def plot_sparsity_scaling(results_path: str = "evaluation_results.csv", output_dir: str = "../../images", metric: str = "KL"):
+def plot_sparsity_scaling(results_path: str = "evaluation_results.csv", output_dir: str = IMAGES, metric: str = "KL"):
     if not os.path.exists(results_path):
         print(f"Results file not found: {results_path}")
         return
@@ -16,7 +17,7 @@ def plot_sparsity_scaling(results_path: str = "evaluation_results.csv", output_d
     df_metric = df[df['metric name'] == metric].copy()
     
     # 2. Select joint distribution results (those without '|' in the query)
-    df_joint = df_metric[~df_metric['query'].str.contains('\|', regex=True)].copy()
+    df_joint = df_metric[~df_metric['query'].str.contains(r'\|', regex=True)].copy()
     
     if df_joint.empty:
         print(f"No joint distribution data found for metric {metric}")

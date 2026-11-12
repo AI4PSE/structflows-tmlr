@@ -1,16 +1,14 @@
-"""Re-plot the main SWD box plots with honest, zero-based y-axes.
+"""Plot the main SWD box plots with zero-based y-axes.
 
-The original result figures use auto-scaled y-axes that start well above zero,
-which visually exaggerates differences that are in fact small. This script
-reproduces the exact aggregation used for the paper figures (average over
-conditional queries per learner seed, four methods) from the cached evaluation
-CSV, and renders the box plots with the y-axis anchored at zero.
+Uses the same aggregation as the paper figures (average over conditional queries per
+learner seed) from an evaluation CSV, with the y-axis anchored at zero so differences
+are shown on an absolute scale.
 
 Reads:  $STRUCTFLOW_RESULTS/<folder>/evaluation_results.csv
-Writes: ../../images/experimental_figures/nonlinear/<name>_zerobased.png
+Writes: <IMAGES>/experimental_figures/nonlinear/<name>_zerobased.png
 """
 
-from pgm_paper_utils.paths import RESULTS
+from pgm_paper_utils.paths import IMAGES
 import os
 import argparse
 import numpy as np
@@ -63,7 +61,7 @@ def main():
     ap.add_argument("--results-base", default=f"{RESULTS}")
     ap.add_argument("--folder", default="nonlinear4")
     ap.add_argument("--metric", default="SWD")
-    ap.add_argument("--outdir", default="../../images/experimental_figures/nonlinear")
+    ap.add_argument("--outdir", default=os.path.join(IMAGES, "experimental_figures", "nonlinear"))
     args = ap.parse_args()
 
     csv = os.path.join(args.results_base, args.folder, "evaluation_results.csv")

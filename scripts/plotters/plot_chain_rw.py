@@ -18,6 +18,7 @@ import os
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 import numpy as np
 
 # Sized to the printed width (\textwidth = 6.5in) so font sizes are the sizes on the page.
@@ -86,6 +87,9 @@ for ax, (v, title) in zip(axes[1:], [('static_none', 'static'),
                         color=line.get_color(), alpha=0.18, linewidth=0)
     ax.set(xlabel='RK4 steps', ylabel='$W_2$', xscale='log', yscale='log', title=title)
     ax.set_xticks(ks); ax.set_xticklabels(ks); ax.minorticks_off()
+    # label 1-2-5 steps on the log axis so values can be read off
+    ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10, subs=(1, 2, 5)))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f'{v:g}'))
 axes[2].legend(ncol=2, loc='center right', bbox_to_anchor=(1.0, 0.64), handlelength=1.5, columnspacing=0.8)
 
 # Left-panel legend below the whole figure, in one block.

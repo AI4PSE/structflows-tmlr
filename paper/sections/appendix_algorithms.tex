@@ -37,7 +37,7 @@ In the Static mode, variables are sampled sequentially following a topological o
 
 \subsubsection{Static Density Evaluation}
 
-For static conditioning, the conditional log-probability $\log p(y_{targets} | y_{conditions})$ is computed by integrating the flow ODE backward from $t=1$ to $t=0$. Based on Proposition 2 in Appendix~\ref{app:proof}, we compute the log-density by accumulating the divergence of the target variables only. Because the flow has a block-triangular Jacobian, the log-determinant term decomposes into a sum over individual blocks, allowing us to ignore the divergence of the conditioning variables.
+For static conditioning, the conditional log-probability $\log p(y_{targets} | y_{conditions})$ is computed by integrating the flow ODE backward from $t=1$ to $t=0$. By Proposition~\ref{prop:cond-density}, we compute the log-density by accumulating the divergence of the target variables only. Because the flow has a block-triangular Jacobian, the log-determinant term decomposes into a sum over individual blocks, allowing us to ignore the divergence of the conditioning variables.
 
 \subsection{Dynamic Conditioning}
 
@@ -78,4 +78,4 @@ The zero padding is allowed as parents are not dependent on children, and the co
 
 \subsubsection{Dynamic Density Evaluation}
 
-In the Dynamic (parallel) mode, density evaluation requires reconstructing the full temporal trajectories of the conditioning variables. We first integrate the full system (targets + conditions) backward from $t=1$ to $t=0$ to obtain the trajectories $\tau_{all}(t)$. We then define a subset velocity field $v_T(y_T, t; \tau_C)$ where the conditioning variables are interpolated from their backward trajectories. Based on Proposition 2 in Appendix~\ref{app:proof}, we compute the log-density by accumulating the divergence of the target variables only, properly accounting for the dynamic coupling between variables without integrating the full joint density.
+In the Dynamic (parallel) mode, density evaluation requires reconstructing the full temporal trajectories of the conditioning variables. We first integrate the full system (targets + conditions) backward from $t=1$ to $t=0$ to obtain the trajectories $\tau_{all}(t)$. We then define a subset velocity field $v_T(y_T, t; \tau_C)$ where the conditioning variables are interpolated from their backward trajectories. By Proposition~\ref{prop:cond-density}, we compute the log-density by accumulating the divergence of the target variables only, properly accounting for the dynamic coupling between variables without integrating the full joint density.

@@ -18,7 +18,7 @@ prior init. Three checks:
 Conditions enter the jitted runner as traced arguments (one trace per
 (pgm, warmup) pair -- not per replication).
 
-Run: CUDA_VISIBLE_DEVICES=0 ~/my_jax_env/bin/python scripts/ablations/nuts_validation.py
+Run: CUDA_VISIBLE_DEVICES=0 python scripts/ablations/nuts_validation.py
 """
 from pgm_paper_utils.paths import RESULTS
 import os, sys, json

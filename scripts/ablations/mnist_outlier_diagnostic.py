@@ -12,7 +12,7 @@ rather than a perceptual failure. We:
      the inflation is attributable to a few out-of-range pixels.
 
 Run with the project jax env, e.g.
-    ~/my_jax_env/bin/python scripts/ablations/mnist_outlier_diagnostic.py
+    python scripts/ablations/mnist_outlier_diagnostic.py
 """
 from pgm_paper_utils.paths import RESULTS
 import os

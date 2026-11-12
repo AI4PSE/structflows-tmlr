@@ -6,7 +6,7 @@ compares the model's digit marginal under conditioning on palette[5] against
 the exact posterior (0.79 at digit 5 for rho=0.8 with MNIST class frequencies).
 
 Run from repository root:
-    ~/my_jax_env/bin/python scripts/ablations/colored_mnist_capacity_probe.py \
+    python scripts/ablations/colored_mnist_capacity_probe.py \
         --budget_params 32000000 --train_steps 150000
 """
 from pgm_paper_utils.paths import RESULTS

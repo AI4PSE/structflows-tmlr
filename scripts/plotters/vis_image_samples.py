@@ -1,3 +1,4 @@
+from pgm_paper_utils.paths import IMAGES
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -46,7 +47,7 @@ def load(path):
     dist = create_distribution(config, model, normaliser)
     return dist, config, pgm
 
-def plot_mnist_samples(results_path: str, output_path: str = "../../images/mnist_samples.png", seed=0):
+def plot_mnist_samples(results_path: str, output_path: str = os.path.join(IMAGES, "mnist_samples.png"), seed=0):
     dists = []
     configs = []
     # Pick one run_dir for each mode (repeatable)

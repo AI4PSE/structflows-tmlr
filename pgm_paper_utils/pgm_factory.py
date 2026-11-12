@@ -14,14 +14,6 @@ from structflow.pgms.image_benchmarks import DigitsPGM, MNISTPGM
 from structflow.pgms.colored_mnist import ColoredMNISTPGM
 
 
-# from pgms.posteriordb_benchmarks import (
-#     PosteriordbPGM,
-#     EightSchoolsImpl,
-#     DiamondsImpl)
-
-def find_posteriordb_path():
-    return os.environ.get("PDB_PATH", os.path.expanduser("~/posteriordb/posterior_database"))
-
 def create_pgm(pgm_type: str, config: Dict[str, Any], key: jax.Array):
     """
     Factory function to create a PGM instance based on type and configuration.
@@ -47,7 +39,7 @@ def create_pgm(pgm_type: str, config: Dict[str, Any], key: jax.Array):
         key: JAX PRNGKey for random initializations.
         
     Returns:
-        A StructuralPGM instance or appropriate PGM subclass for images/posteriordb.
+        A StructuralPGM instance, or the image PGM class for image benchmarks.
     """
     
     # Determine mechanism type and mechanism kwargs
@@ -110,33 +102,6 @@ def create_pgm(pgm_type: str, config: Dict[str, Any], key: jax.Array):
             color_noise=config.get('color_noise', 0.05),
         )
 
-    # # Posteriordb PGMs
-    # elif pgm_type in ['eight_schools', 'diamonds']:
-    #     if PosteriordbPGM is None:
-    #         raise ImportError("PosteriorDB benchmarks not available. Install posteriordb package.")
-        
-    #     pdb_path = config.get('pdb_path')
-    #     if pdb_path is None:
-    #         pdb_path = find_posteriordb_path()
-            
-    #     use_bridgestan = config.get('use_bridgestan', False)
-        
-    #     if pgm_type == 'eight_schools':
-    #         J = config.get('J', 8)
-    #         impl = EightSchoolsImpl(J=J)
-    #         posterior_name = "eight_schools-eight_schools_centered"
-            
-    #     elif pgm_type == 'diamonds':
-    #         impl = DiamondsImpl()
-    #         posterior_name = "diamonds-diamonds"
-
-    #     return PosteriordbPGM.from_pdb(
-    #         pdb_path=pdb_path,
-    #         posterior_name=posterior_name,
-    #         jax_impl=impl,
-    #         use_bridgestan=use_bridgestan
-    #     )
-        
     else:
         raise ValueError(f"Unknown PGM type: {pgm_type}. "
-                        f"Supported: chain, random, dense, digits, mnist, eight_schools, diamonds")
+                        f"Supported: chain, random, dense, digits, mnist, colored_mnist")

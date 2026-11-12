@@ -34,7 +34,7 @@ arxiv: main.pdf
 	cp main.tex tmlr.sty tmlr.bst algorithm.sty algorithmic.sty fancyhdr.sty references.bib main.bbl arxiv-build/ 2>/dev/null || true
 	cp -r sections arxiv-build/
 	mkdir -p arxiv-build/images
-	cp -r ../images/. arxiv-build/images/
+	cp -r images/. arxiv-build/images/
 	cd arxiv-build && tar -czf ../arxiv-submission.tar.gz .
 	@echo "Created arxiv-submission.tar.gz"
 

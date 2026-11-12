@@ -14,6 +14,7 @@ causes x1, x2 from the observed effect y). We measure:
     amortization wins beyond a crossover K*.
 """
 
+from pgm_paper_utils.paths import IMAGES
 import os
 import time
 import argparse
@@ -70,7 +71,7 @@ def main():
     ap.add_argument("--batch", type=int, default=512)
     ap.add_argument("--mechanism", type=str, default="nonlinear_parent")
     ap.add_argument("--out", type=str,
-                    default="../../images/ablations/amortization_vs_nuts.png")
+                    default=os.path.join(IMAGES, "ablations", "amortization_vs_nuts.png"))
     args = ap.parse_args()
 
     key = random.PRNGKey(0)

@@ -6,13 +6,12 @@ exported with text converted to paths so the PDF does not depend on installed fo
 
 Run: python scripts/plotters/export_inkscape_figures.py   (needs inkscape >= 1.0 on PATH)
 """
+from pgm_paper_utils.paths import IMAGES
 import os
 import re
 import subprocess
 import tempfile
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-IMAGES = os.path.normpath(os.path.join(HERE, '..', '..', 'images'))
 CANVAS = os.path.join(IMAGES, 'pgm-structure.svg')
 
 # output name -> (x0, y0, x1, y1) in px on the canvas

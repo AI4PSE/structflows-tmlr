@@ -6,7 +6,7 @@ This section develops StructFlow bottom-up: flow-matching primitives, then block
 \begin{figure*}[hbt!]
     \centering
     \includegraphics[width=\textwidth]{images/collider-pgm-dual.pdf}
-    \caption{\textbf{The StructFlow Pipeline.} Given a causal graph (top left) and an inference query $p(x_1 \mid x_2, x_0)$, StructFlow transforms the graph into a valid flow architecture. 1. The graph is \textbf{moralized} (adding the blue edge between $x_1$ and $x_2$) to account for the "explaining away" effect. 2. The flow is ordered such that the condition $x_0$ is integrated first, ensuring the correct dependencies are used as conditions in each variable's flow.}
+    \caption{\textbf{The StructFlow Pipeline.} Given a causal graph (top, second from left) and an inference query $p(x_1 \mid x_0, x_2)$, StructFlow compiles the graph into a flow architecture. 1. The graph is \textbf{moralized}: because the common effect $x_0$ is observed, its causes $x_1$ and $x_2$ become dependent (``explaining away''), so the compiled DAG gains the teal edge $x_2 \to x_1$. 2. The blocks are ordered with the conditions first ($x_0$, then $x_2$) and the target $x_1$ last, so each block's flow is conditioned on the variables it depends on. The boxes on either side list the distributions each structure makes tractable; below each DAG is its flow, one block per variable, transporting noise (top) to data (bottom).}
     \label{fig:dual-flow}
 \end{figure*}
 
@@ -67,40 +67,27 @@ When the goal is mechanistic simulation or causal reasoning, StructFlow preserve
 \end{equation}
 Because this structure mirrors the causal mechanisms (respecting the Principle of Independent Mechanisms \citep{Peters2017}), the resulting flow enables interventional queries $p(y \mid \mathrm{do}(x))$ by fixing parent values, and counterfactual queries via flow inversion (Section~\ref{sec:counterfactuals}).
 
-This is more than an analogy: each block reads its parents only through their
-\emph{terminal} values, so the flow map is literally a system of structural equations driven
-by independent noise.
+This is more than an analogy: with static conditioning each block reads its parents only through their \emph{terminal} values, so the flow map is literally a system of structural equations driven by independent noise.
 
 \begin{lemma}[The causally-aligned flow is an SCM]
 \label{lem:mech-main}
-Let $\phi_1$ be the flow map of a causally-aligned StructFlow with a spatially Lipschitz
-velocity field. Then there exist maps $G_1,\dots,G_K$ such that, for $u \sim p_0$ and
+Let $\phi_1$ be the flow map of a causally-aligned StructFlow with static conditioning and a spatially Lipschitz velocity field. Then there exist maps $G_1,\dots,G_K$ such that, for $u \sim p_0$ and
 $\hat x = \phi_1(u)$,
 \begin{equation}
     \hat x^{(k)} = G_k\bigl(\hat x^{(\mathrm{Pa}_\mathcal{G}(k))},\, u_k\bigr),
     \qquad k = 1,\dots,K,
 \end{equation}
-with $u_1,\dots,u_K$ mutually independent and each $G_k$ invertible in $u_k$ at fixed parent
-values. Each $G_k$ is the Knothe--Rosenblatt rearrangement of the learned conditional
-$\hat p\bigl(x^{(k)} \mid x^{(\mathrm{Pa}(k))}\bigr)$.
+with $u_1,\dots,u_K$ mutually independent and each $G_k$ invertible in $u_k$ at fixed parent values, pushing the base block onto the learned conditional $\hat p\bigl(x^{(k)} \mid x^{(\mathrm{Pa}(k))}\bigr)$.
 \end{lemma}
 
-This is the $K$-block generalisation of Lemma~1 of \citet{jeong_conditional_2025}, and it
-licenses the causal reading of the architecture: clamping a block is a genuine mechanism
-replacement, not merely conditioning. Three consequences follow, proved in
+This is the $K$-block generalization of Lemma~1 of \citet{jeong_conditional_2025}, and it
+licenses the causal reading of the architecture: clamping a block replaces a mechanism rather than conditioning on it. Three consequences follow, proved in
 Appendix~\ref{app:hierarchy}: recovering the observational joint recovers \emph{every}
 interventional distribution, for arbitrary structural equations, with the interventional
 density available in one pass (Theorem~\ref{thm:level2},
-Corollary~\ref{cor:interventional-density}); counterfactuals are recovered exactly whenever
-each mechanism is invertible in a scalar noise or additive in a multivariate one, including
-all linear structural equations (Theorem~\ref{thm:level3}); and, less comfortably, none of
-this identifies the graph itself---in the linear--Gaussian case every Markov-equivalent DAG
+Corollary~\ref{cor:interventional-density}); counterfactuals are recovered exactly at the flow-matching optimum whenever each mechanism is monotone coordinate-wise in independent noise or additive, which includes all linear structural equations and our synthetic benchmarks (Theorem~\ref{thm:level3}); and none of this identifies the graph itself---in the linear--Gaussian case every Markov-equivalent DAG
 attains the same optimal flow-matching loss while giving different causal answers
-(Proposition~\ref{prop:mec}). The same argument shows static and dynamic conditioning
-realise the \emph{same} mechanism in the population limit
-(Remark~\ref{rem:static-dynamic-equal}), so the empirical gap between them
-(Section~\ref{sec:experiments}) is an approximation or optimisation effect, not a difference
-in the object being estimated.
+(Proposition~\ref{prop:mec}). These guarantees are for static conditioning. Under dynamic conditioning a block reads its ancestors' trajectories, so the learned flow is an SCM on the transitive closure of $\mathcal{G}$ (each parent set replaced by the ancestor set) rather than on $\mathcal{G}$; with the per-block coupling it still targets the correct conditionals, but we do not claim the mechanism-level guarantees for it (Remark~\ref{rem:static-dynamic-equal}).
 
 \subsubsection{Inference Alignment}
 When the goal is amortized posterior inference $p(\Theta \mid Y)$ where $\Theta$ are latent variables and $Y$ are observations, StructFlow must address two challenges: \emph{ordering}---by Theorem~\ref{thm:marginalization}, the observations $Y$ must precede the targets $\Theta$ for tractable conditional evaluation---and \emph{posterior dependencies}---the posterior can be \emph{denser} than the prior (at a collider $X_1 \to Y \leftarrow X_2$ with $X_1 \perp X_2$ marginally, observing $Y$ induces $X_1 \not\perp X_2 \mid Y$, a correlation the original DAG has no edge to carry). The compilation pipeline for inference mode consists of three steps:
@@ -113,10 +100,10 @@ When the goal is amortized posterior inference $p(\Theta \mid Y)$ where $\Theta$
     \begin{equation}
         j \in \mathrm{Pa}_{\text{flow}}(\theta_k) \iff \theta_k \not\perp_d z_j \mid \{z_1, \dots, z_{k-1}\} \setminus \{z_j\},
     \end{equation}
-    where $z_1, \dots, z_{k-1}$ precede $\theta_k$. The first two steps overshoot (a complete graph always suffices); the d-separation test removes every dependency the graph refutes, restoring the sparsity that acts as the inductive bias of Section~\ref{sec:sample-efficiency}.
+    where $z_1, \dots, z_{k-1}$ precede $\theta_k$. The first two steps overshoot (a complete graph always suffices); the d-separation test removes every dependency the graph refutes, restoring the sparsity that acts as the inductive bias of Appendix~\ref{sec:sample-efficiency}.
 \end{enumerate}
 
-The conditioning mechanisms of Section~\ref{sec:conditioning} then operate on this \emph{compiled} graph---the moralized, re-ordered, pruned structure---not on the original DAG. \rev{The division of labor is worth stating: the dependency set is constructed \emph{entirely} by the d-separation step---explaining-away dependencies between co-parents appear under every conditions-first ordering---while moralization only guides the ordering, toward sparser compiled structures (ablation in Appendix~\ref{app:ordering-ablation}).} Appendix~\ref{app:worked-example} walks the full pipeline through a dense four-node example, including a query for which conditioning and intervening differ, and Appendix~\ref{app:algorithms} gives the explicit algorithms.
+The conditioning mechanisms of Section~\ref{sec:conditioning} then operate on this \emph{compiled} graph---the moralized, re-ordered, pruned structure---not on the original DAG. \rev{The two steps divide the work: the dependency set is constructed \emph{entirely} by the d-separation step---explaining-away dependencies between co-parents appear under every conditions-first ordering---while moralization only guides the ordering, toward sparser compiled structures (ablation in Appendix~\ref{app:ordering-ablation}).} Appendix~\ref{app:worked-example} walks the full pipeline through a dense four-node example, including a query for which conditioning and intervening differ, and Appendix~\ref{app:algorithms} gives the explicit algorithms.
 
 \paragraph{One engine per ordering, not per query.} Compilation is specific to a query \emph{class}: a single inference-aligned flow with ordering $[Y, \Theta]$ answers every query whose conditioning set is a prefix of that ordering (the tractable family of Theorem~\ref{thm:marginalization}), for any observed values, without retraining; only a different observation/target split triggers a new compilation and training run. Compilation itself is negligible---$O(K^2)$ d-separation tests, each linear in the size of the graph \citep{Koller2009}---so the dominant cost is flow-matching training, the same cost paid by any CNF of comparable connectivity.
 
@@ -130,7 +117,7 @@ In static mode, conditioning variables are first integrated to completion, then 
 \begin{equation}
     \frac{\partial \theta_t}{\partial t} = v^{(\Theta)}_\phi(\theta_t, y_1, t)
 \end{equation}
-Sampling proceeds sequentially---one ODE solve per block, each block conditioned on the terminal values of its already-integrated parents---so a flow with $K$ target blocks requires $K+1$ sequential solves.
+Sampling proceeds sequentially---one ODE solve per block, each block conditioned on the terminal values of its already-integrated parents---so a query with $K$ target blocks requires $K$ sequential solves (observed conditions are fixed values and need none).
 
 \paragraph{Dynamic Conditioning.}
 In dynamic mode, all variables are integrated \emph{simultaneously} in a single ODE solve. The target velocity field is conditioned on the \emph{time-evolving trajectory} of the conditioning variables:
@@ -142,7 +129,7 @@ where $y_t$ co-evolves with $\theta_t$. This requires the network to learn meani
 \subsection{Counterfactual Inference}
 \label{sec:counterfactuals}
 
-Block-triangular flows enable counterfactual reasoning---given an observation $(x, y)$ from a causal model $X \to Y$, answering ``what would $Y$ have been if $X$ had been $x'$?'', formally $p(Y_{x'} \mid X{=}x, Y{=}y)$---via the Abduction-Action-Prediction framework \citep{Pearl2009} (illustrated in Appendix Figure~\ref{fig:counterfactual}). The key insight is that the flow's bijectivity recovers the unique exogenous noise $u$ that generated an observation, allowing re-simulation under a hypothetical intervention:
+Block-triangular flows enable counterfactual reasoning---given an observation $(x, y)$ from a causal model $X \to Y$, answering ``what would $Y$ have been if $X$ had been $x'$?'', formally $p(Y_{x'} \mid X{=}x, Y{=}y)$---via the Abduction-Action-Prediction framework \citep{Pearl2009} (illustrated in Appendix Figure~\ref{fig:counterfactual}). The flow's bijectivity recovers the noise $u$ that generated an observation under the learned model, which allows re-simulation under a hypothetical intervention:
 
 \begin{enumerate}
     \item \textbf{Abduction:} Recover the noise by inverting the flow: integrate $\frac{dy_t}{dt} = -v_t(y_t)$ backward from $y_1 = y_{\text{obs}}$ to obtain $u = \phi_1^{-1}(y_{\text{obs}})$.
@@ -152,16 +139,9 @@ Block-triangular flows enable counterfactual reasoning---given an observation $(
 
 \begin{remark}[Counterfactual identifiability]
 \label{rem:cf-identifiability}
-Abduction recovers the noise $u = \phi_1^{-1}(y_{\mathrm{obs}})$ consistent with the
-observation \emph{under the learned model}---unique given the variable ordering by
-Knothe--Rosenblatt uniqueness \citep{Rosenblatt1952, Knothe1957}, but not necessarily the
-true exogenous noise of the data-generating process. Theorem~\ref{thm:level3} identifies
-when the discrepancy is harmless: if each mechanism is strictly monotone in a scalar noise
-or additive in a multivariate one (a class covering all linear structural equations and our
-synthetic benchmarks), the mismatch is a parent-independent reparameterisation that cancels
-between abduction and prediction, and the recovered counterfactual is exact. For
-multivariate, non-additive blocks---such as the image block of
-Section~\ref{sec:colored-mnist}---the condition genuinely fails, and those counterfactuals
+Abduction recovers the noise $u = \phi_1^{-1}(y_{\mathrm{obs}})$ consistent with the observation \emph{under the learned model}, which is not necessarily the true exogenous noise of the data-generating process. Theorem~\ref{thm:level3} identifies
+when the discrepancy is harmless: for a static flow at the flow-matching optimum, if each mechanism is monotone coordinate-wise in independent noise or additive (a class covering all linear structural equations and our synthetic benchmarks), the mismatch is a parent-independent reparameterization that cancels
+between abduction and prediction, and the recovered counterfactual is exact. For multivariate blocks that are neither---such as the image block of Section~\ref{sec:colored-mnist}---the condition fails, and those counterfactuals
 remain model-based estimates (Remark~\ref{rem:l3-limits}). All of this presumes the graph is
 correct; that presumption is the binding one (Proposition~\ref{prop:mec}).
 \end{remark}

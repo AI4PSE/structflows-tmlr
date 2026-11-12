@@ -1,3 +1,4 @@
+from pgm_paper_utils.paths import IMAGES
 import fire
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,7 +40,7 @@ def main(csv_path):
     plt.tight_layout()
     
     # Save results
-    output_path = '../../images/chain_benchmark_comparison.png'
+    output_path = os.path.join(IMAGES, 'chain_benchmark_comparison.png')
     plt.savefig(output_path, dpi=300)
     print(f"Plot saved to {output_path}")
 

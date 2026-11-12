@@ -12,9 +12,9 @@ Colored-MNIST and renders:
   inference flow on held-out data.
 
 Usage (from repository root):
-    ~/my_jax_env/bin/python scripts/plotters/vis_colored_mnist_flows.py \
-        --causal_results $STRUCTFLOW_RESULTS/colored_mnist/causal \
-        --inference_results $STRUCTFLOW_RESULTS/colored_mnist/inference \
+    python scripts/plotters/vis_colored_mnist_flows.py \
+        --causal_results $STRUCTFLOW_RESULTS/colored_mnist_kr/conv_causal \
+        --inference_results $STRUCTFLOW_RESULTS/colored_mnist_kr/conv_inference \
         --mode static --learner_seed 0 \
         --output paper/images/colored_mnist_flows.png
 """

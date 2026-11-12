@@ -5,7 +5,7 @@ Graph: Z1 -> X, Z1 -> Y, Z1 -> Z2, X -> Y, X -> Z2, Z2 -> Y
 Queries: p(z2 | x, y) (inference alignment) and p(y | do(x)) (causal alignment).
 
 Run from anywhere:
-    ~/my_jax_env/bin/python scripts/plotters/vis_worked_example.py
+    python scripts/plotters/vis_worked_example.py
 """
 from pgm_paper_utils.paths import IMAGES
 import sys

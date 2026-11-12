@@ -17,6 +17,7 @@ the 2-Wasserstein (Bures) distance between the flow's posterior and the exact
 Gaussian posterior -- an interpretable, zero-based metric (no SWD normalization).
 """
 
+from pgm_paper_utils.paths import IMAGES
 import os
 import argparse
 import numpy as np
@@ -123,7 +124,7 @@ def main():
     ap.add_argument("--lr", type=float, default=2e-3)
     ap.add_argument("--batch", type=int, default=512)
     ap.add_argument("--out", type=str,
-                    default="../../images/ablations/sample_efficiency.png")
+                    default=os.path.join(IMAGES, "ablations", "sample_efficiency.png"))
     args = ap.parse_args()
 
     key = random.PRNGKey(0)

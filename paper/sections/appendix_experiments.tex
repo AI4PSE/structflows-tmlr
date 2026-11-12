@@ -14,7 +14,7 @@ The Linear Gaussian PGM is defined by the following structural equation:
 \end{equation}
 where $x \in \mathbb{R}^D$ is a vector of $D$ variables, $W \in \mathbb{R}^{D \times D}$ is a strictly lower-triangular weight matrix representing the causal dependencies, $b \in \mathbb{R}^D$ is a bias vector, and $\epsilon \sim \mathcal{N}(0, I)$ is exogenous Gaussian noise. The matrix $S$ scales the noise for each variable.
 
-In our experiments, we use random PGMs which we generate by sampling edges from a lower-triangular matrix with a specified sparsity $s$. Weights and biases are sampled from a standard normal distribution, and noise scales are sampled uniformly from $[0.1, 1.0]$.
+In our experiments, we use random PGMs which we generate by sampling edges from a lower-triangular matrix with a specified sparsity $s$. In the linear PGMs, $x_i = A_i \mathrm{Pa}(x_i) + B_i \epsilon_i + b_i$ with $\epsilon_i \sim \mathcal{N}(0, I)$; the entries of $A_i$ and $b_i$ are drawn from $\mathcal{N}(0, 0.5^2)$, and $B_i$ is the identity plus a lower-triangular perturbation with $\mathcal{N}(0, 0.1^2)$ entries.
 
 The joint distribution of a Linear Gaussian PGM is a multivariate Gaussian $p(x) = \mathcal{N}(\mu, \Sigma)$, where:
 \begin{equation}
@@ -27,14 +27,14 @@ To test the framework's ability to handle complex, non-linear dependencies, we i
 \begin{equation}
      x_i = f_i(\text{Pa}(x_i), \epsilon_i)
 \end{equation}
-where $f_i$ is an invertible transformation with respect to the noise $\epsilon_i \sim \mathcal{N}(0, 1)$. This design produces \textbf{truly non-Gaussian conditionals} $p(x_i | \text{Pa}(x_i))$, unlike standard non-linear PGMs where the conditional is necessarily Gaussian.
+where $f_i$ is an invertible transformation with respect to the noise $\epsilon_i \sim \mathcal{N}(0, 1)$. This design produces \textbf{non-Gaussian conditionals} $p(x_i | \text{Pa}(x_i))$, unlike standard non-linear PGMs where the conditional is necessarily Gaussian.
 
 \paragraph{Mechanism Architecture:}
 The mechanism $f_i$ is implemented as a \textbf{rational quadratic spline} transformation, conditioned on parent values. The spline parameters (widths, heights, and derivatives) are computed by a small neural network:
 \begin{equation}
      \text{(widths, heights, derivatives)} = \text{MLP}_{\theta}(\text{Pa}(x_i))
 \end{equation}
-Each MLP consists of 2 hidden layers with a width of 32 units and uses \textbf{tanh} activation functions. The spline operates within a bounded domain $[-\text{bound}, \text{bound}]$ (typically $\text{bound} = 4.0$) with a configurable number of bins $K$ (typically $K = 8$). Outside the bounded domain, the spline behaves as the identity transformation.
+Each MLP consists of 2 hidden layers with a width of 32 units and uses \textbf{tanh} activation functions. The spline operates within a bounded domain $[-\text{bound}, \text{bound}]$ (typically $\text{bound} = 4.0$) with a configurable number of bins $K$ (typically $K = 8$). Outside the bounded domain, the spline behaves as the identity transformation. Nodes are $d$-dimensional ($d=4$ at $n=4$, $d=8$ at $n=8$), and the spline acts on each coordinate of the independent Gaussian noise $\epsilon_i \sim \mathcal{N}(0, I_d)$ separately, with its own parameters, all computed from the parents.
 
 \paragraph{Log-Probability Computation:}
 Unlike standard non-linear PGMs where the conditional is always Gaussian, the true conditional distribution here is non-Gaussian. We compute log-probabilities using the change of variables formula:
@@ -44,7 +44,7 @@ Unlike standard non-linear PGMs where the conditional is always Gaussian, the tr
 where $\epsilon_i = f_i^{-1}(x_i, \text{Pa}(x_i))$ is the recovered noise obtained by inverting the spline transformation. The invertibility of the rational quadratic spline ensures that both the forward transformation and its inverse can be computed efficiently with accurate log-determinant Jacobian tracking.
 
 \paragraph{Inference and Ground Truth:}
-The marginals and posteriors of these Non-linear Noise PGMs are not analytically tractable. To evaluate our flows, we use \textbf{No-U-Turn Sampling (NUTS)} via the \texttt{blackjax} library to generate high-fidelity ground-truth samples from the joint distribution. We use 1000 samples with 500 warmup steps for each evaluation query.
+The marginals and posteriors of these Non-linear Noise PGMs are not analytically tractable. To evaluate our flows, we use \textbf{No-U-Turn Sampling (NUTS)} via the \texttt{blackjax} library to generate high-fidelity ground-truth samples from the joint distribution. Each reference sample comes from an independent chain (window adaptation for $250$ steps, then one kept state), and the reference ensemble has the same size as the flows' evaluation sample; Appendix~\ref{app:nuts-validation} validates this protocol.
 
 \begin{figure}[hbt!]
     \centering
@@ -55,7 +55,7 @@ The marginals and posteriors of these Non-linear Noise PGMs are not analytically
 
 \subsubsection{MNIST}
 
-The MNIST benchmark evaluates our framework on real-world image data, providing a practical test of the learned flows on high-dimensional observations. The MNIST dataset consists of 70,000 flattened grayscale handwritten digit images (28$\times$28 pixels, i.e., 784 dimensions) with corresponding labels from 0 to 9.
+The MNIST benchmark tests the learned flows on high-dimensional observations (real handwritten digits, with a two-node graph). The MNIST dataset consists of 70,000 flattened grayscale handwritten digit images (28$\times$28 pixels, i.e., 784 dimensions) with corresponding labels from 0 to 9.
 
 \paragraph{PGM Structure and Variable Dimensions:}
 The MNIST PGM follows a simple causal structure: label $\to$ image, meaning the digit label is the parent of the image data. The variable dimensions are:
@@ -77,7 +77,7 @@ The dataset is partitioned into training (approximately 60,000 samples) and test
 \subsection{Hyperparameters}
 \label{sec:hyperparameters}
 
-Unless otherwise specified, all models (Joint, Static, and Dynamic) were trained using the same budget and optimization settings to ensure a fair comparison.
+Unless otherwise specified, all models were trained using the same budget and optimization settings to ensure a fair comparison.
 
 \begin{table}[h]
 \centering

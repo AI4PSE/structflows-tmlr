@@ -10,7 +10,7 @@ compile the leaf-conditioned posterior under
   (c) worst-case check: random valid orderings (conditions still a prefix).
 and report compiled edge counts + whether the collider co-parent edge appears.
 
-Run: ~/my_jax_env/bin/python scripts/ablations/ordering_ablation.py
+Run: python scripts/ablations/ordering_ablation.py
 """
 import sys, itertools, random as pyrandom
 
